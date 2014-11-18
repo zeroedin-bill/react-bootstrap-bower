@@ -1,11 +1,10 @@
-define(function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define(function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 var Button = require('./Button');
 
-var ButtonGroup = React.createClass({displayName: 'ButtonGroup',
+var ButtonToolbar = React.createClass({displayName: 'ButtonToolbar',
   mixins: [BootstrapMixin],
 
   getDefaultProps: function () {
@@ -17,15 +16,16 @@ var ButtonGroup = React.createClass({displayName: 'ButtonGroup',
   render: function () {
     var classes = this.getBsClassSet();
 
-    return this.transferPropsTo(
-      React.DOM.div(
-        {role:"toolbar",
-        className:classSet(classes)}, 
+    return (
+      React.createElement("div", React.__spread({}, 
+        this.props, 
+        {role: "toolbar", 
+        className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.children
       )
     );
   }
 });
 
-module.exports = ButtonGroup;
+module.exports = ButtonToolbar;
 });

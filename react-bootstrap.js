@@ -341,15 +341,60 @@ var requirejs, require, define;
 
 define("almond", function(){});
 
+define('utils/joinClasses',['require','exports','module'],function (require, exports, module) {/**
+ * Copyright 2013-2014, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This file contains an unmodified version of:
+ * https://github.com/facebook/react/blob/v0.12.0/src/utils/joinClasses.js
+ *
+ * This source code is licensed under the BSD-style license found here:
+ * https://github.com/facebook/react/blob/v0.12.0/LICENSE
+ * An additional grant of patent rights can be found here:
+ * https://github.com/facebook/react/blob/v0.12.0/PATENTS
+ */
+
+
+
+/**
+ * Combines multiple className strings into one.
+ * http://jsperf.com/joinclasses-args-vs-array
+ *
+ * @param {...?string} classes
+ * @return {string}
+ */
+function joinClasses(className/*, ... */) {
+  if (!className) {
+    className = '';
+  }
+  var nextClass;
+  var argLength = arguments.length;
+  if (argLength > 1) {
+    for (var ii = 1; ii < argLength; ii++) {
+      nextClass = arguments[ii];
+      if (nextClass) {
+        className = (className ? className + ' ' : '') + nextClass;
+      }
+    }
+  }
+  return className;
+}
+
+module.exports = joinClasses;
+
+});
+
 define('utils/classSet',['require','exports','module'],function (require, exports, module) {/**
- * React classSet
+ * Copyright 2013-2014, Facebook, Inc.
+ * All rights reserved.
  *
- * Copyright 2013-2014 Facebook, Inc.
- * @licence https://github.com/facebook/react/blob/0.11-stable/LICENSE
+ * This file contains an unmodified version of:
+ * https://github.com/facebook/react/blob/v0.12.0/src/vendor/stubs/cx.js
  *
- * This file is unmodified from:
- *  https://github.com/facebook/react/blob/0.11-stable/src/vendor/stubs/cx.js
- *
+ * This source code is licensed under the BSD-style license found here:
+ * https://github.com/facebook/react/blob/v0.12.0/LICENSE
+ * An additional grant of patent rights can be found here:
+ * https://github.com/facebook/react/blob/v0.12.0/PATENTS
  */
 
 /**
@@ -380,87 +425,77 @@ function cx(classNames) {
 module.exports = cx;
 });
 
-define('utils/merge',['require','exports','module'],function (require, exports, module) {/**
- * Merge helper
+define('utils/Object.assign',['require','exports','module'],function (require, exports, module) {/**
+ * Copyright 2014, Facebook, Inc.
+ * All rights reserved.
  *
- * TODO: to be replaced with ES6's `Object.assign()` for React 0.12
+ * This file contains an unmodified version of:
+ * https://github.com/facebook/react/blob/v0.12.0/src/vendor/stubs/Object.assign.js
+ *
+ * This source code is licensed under the BSD-style license found here:
+ * https://github.com/facebook/react/blob/v0.12.0/LICENSE
+ * An additional grant of patent rights can be found here:
+ * https://github.com/facebook/react/blob/v0.12.0/PATENTS
  */
 
-/**
- * Shallow merges two structures by mutating the first parameter.
- *
- * @param {object} one Object to be merged into.
- * @param {?object} two Optional object with properties to merge from.
- */
-function mergeInto(one, two) {
-  if (two != null) {
-    for (var key in two) {
-      if (!two.hasOwnProperty(key)) {
-        continue;
+// https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
+
+function assign(target, sources) {
+  if (target == null) {
+    throw new TypeError('Object.assign target cannot be null or undefined');
+  }
+
+  var to = Object(target);
+  var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+  for (var nextIndex = 1; nextIndex < arguments.length; nextIndex++) {
+    var nextSource = arguments[nextIndex];
+    if (nextSource == null) {
+      continue;
+    }
+
+    var from = Object(nextSource);
+
+    // We don't currently support accessors nor proxies. Therefore this
+    // copy cannot throw. If we ever supported this then we must handle
+    // exceptions and side-effects. We don't support symbols so they won't
+    // be transferred.
+
+    for (var key in from) {
+      if (hasOwnProperty.call(from, key)) {
+        to[key] = from[key];
       }
-      one[key] = two[key];
     }
   }
-}
 
-/**
- * Shallow merges two structures into a return value, without mutating either.
- *
- * @param {?object} one Optional object with properties to merge from.
- * @param {?object} two Optional object with properties to merge from.
- * @return {object} The shallow extension of one by two.
- */
-function merge(one, two) {
-  var result = {};
-  mergeInto(result, one);
-  mergeInto(result, two);
-  return result;
-}
+  return to;
+};
 
-module.exports = merge;
+module.exports = assign;
+
 });
 
-define('utils/cloneWithProps',['require','exports','module','react','./merge'],function (require, exports, module) {/**
- * React cloneWithProps
- *
- * Copyright 2013-2014 Facebook, Inc.
- * @licence https://github.com/facebook/react/blob/0.11-stable/LICENSE
+define('utils/cloneWithProps',['require','exports','module','react','./joinClasses','./Object.assign'],function (require, exports, module) {/**
+ * Copyright 2013-2014, Facebook, Inc.
+ * All rights reserved.
  *
  * This file contains modified versions of:
- *  https://github.com/facebook/react/blob/0.11-stable/src/utils/cloneWithProps.js
- *  https://github.com/facebook/react/blob/0.11-stable/src/core/ReactPropTransferer.js
- *  https://github.com/facebook/react/blob/0.11-stable/src/utils/joinClasses.js
+ * https://github.com/facebook/react/blob/v0.12.0/src/utils/cloneWithProps.js
+ * https://github.com/facebook/react/blob/v0.12.0/src/core/ReactPropTransferer.js
+ *
+ * This source code is licensed under the BSD-style license found here:
+ * https://github.com/facebook/react/blob/v0.12.0/LICENSE
+ * An additional grant of patent rights can be found here:
+ * https://github.com/facebook/react/blob/v0.12.0/PATENTS
  *
  * TODO: This should be replaced as soon as cloneWithProps is available via
  *  the core React package or a separate package.
  *  @see https://github.com/facebook/react/issues/1906
- *
  */
 
 var React = require('react');
-var merge = require('./merge');
-
-/**
- * Combines multiple className strings into one.
- * http://jsperf.com/joinclasses-args-vs-array
- *
- * @param {...?string} classes
- * @return {string}
- */
-function joinClasses(className/*, ... */) {
-  if (!className) {
-    className = '';
-  }
-  var nextClass;
-  var argLength = arguments.length;
-  if (argLength > 1) {
-    for (var ii = 1; ii < argLength; ii++) {
-      nextClass = arguments[ii];
-      nextClass && (className += ' ' + nextClass);
-    }
-  }
-  return className;
-}
+var joinClasses = require('./joinClasses');
+var assign = require("./Object.assign");
 
 /**
  * Creates a transfer strategy that will merge prop values using the supplied
@@ -483,7 +518,7 @@ var transferStrategyMerge = createTransferStrategy(function(a, b) {
   // `merge` overrides the first object's (`props[key]` above) keys using the
   // second object's (`value`) keys. An object's style's existing `propA` would
   // get overridden. Flip the order here.
-  return merge(b, a);
+  return assign({}, b, a);
 });
 
 function emptyFunction() {}
@@ -502,14 +537,6 @@ var TransferStrategies = {
    * Transfer the `className` prop by merging them.
    */
   className: createTransferStrategy(joinClasses),
-  /**
-   * Never transfer the `key` prop.
-   */
-  key: emptyFunction,
-  /**
-   * Never transfer the `ref` prop.
-   */
-  ref: emptyFunction,
   /**
    * Transfer the `style` prop (which is an object) by merging them.
    */
@@ -549,8 +576,9 @@ function transferInto(props, newProps) {
  * @return {object} a new object containing both sets of props merged.
  */
 function mergeProps(oldProps, newProps) {
-  return transferInto(merge(oldProps), newProps);
+  return transferInto(assign({}, oldProps), newProps);
 }
+
 
 var ReactPropTransferer = {
   mergeProps: mergeProps
@@ -576,16 +604,12 @@ function cloneWithProps(child, props) {
     newProps.children = child.props.children;
   }
 
-  // Huge hack to support both the 0.10 API and the new way of doing things
-  // TODO: remove when support for 0.10 is no longer needed
-  if (React.version.indexOf('0.10.') === 0) {
-    return child.constructor.ConvenienceConstructor(newProps);
-  }
-
-
   // The current API doesn't retain _owner and _context, which is why this
-  // doesn't use ReactDescriptor.cloneAndReplaceProps.
-  return child.constructor(newProps);
+  // doesn't use ReactElement.cloneAndReplaceProps.
+  var mockLegacyFactory = function(){};
+  mockLegacyFactory.isReactLegacyFactory = true;
+  mockLegacyFactory.type = child.type;
+  return React.createElement(mockLegacyFactory, newProps);
 }
 
 module.exports = cloneWithProps;
@@ -891,7 +915,7 @@ function mapValidComponents(children, func, context) {
   var index = 0;
 
   return React.Children.map(children, function (child) {
-    if (React.isValidComponent(child)) {
+    if (React.isValidElement(child)) {
       var lastIndex = index;
       index++;
       return func.call(context, child, lastIndex);
@@ -916,7 +940,7 @@ function forEachValidComponents(children, func, context) {
   var index = 0;
 
   return React.Children.forEach(children, function (child) {
-    if (React.isValidComponent(child)) {
+    if (React.isValidElement(child)) {
       func.call(context, child, index);
       index++;
     }
@@ -933,7 +957,7 @@ function numberOfValidComponents(children) {
   var count = 0;
 
   React.Children.forEach(children, function (child) {
-    if (React.isValidComponent(child)) { count++; }
+    if (React.isValidElement(child)) { count++; }
   });
 
   return count;
@@ -949,7 +973,7 @@ function hasValidComponent(children) {
   var hasValid = false;
 
   React.Children.forEach(children, function (child) {
-    if (!hasValid && React.isValidComponent(child)) {
+    if (!hasValid && React.isValidElement(child)) {
       hasValid = true;
     }
   });
@@ -965,11 +989,11 @@ module.exports = {
 };
 });
 
-define('PanelGroup',['require','exports','module','react','./utils/classSet','./utils/cloneWithProps','./BootstrapMixin','./utils/ValidComponentChildren'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('PanelGroup',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./utils/cloneWithProps','./BootstrapMixin','./utils/ValidComponentChildren'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var BootstrapMixin = require('./BootstrapMixin');
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
 
@@ -998,26 +1022,27 @@ var PanelGroup = React.createClass({displayName: 'PanelGroup',
   },
 
   render: function () {
-    return this.transferPropsTo(
-      React.DOM.div( {className:classSet(this.getBsClassSet()), onSelect:null}, 
+    var classes = this.getBsClassSet();
+    return (
+      React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes)), onSelect: null}), 
         ValidComponentChildren.map(this.props.children, this.renderPanel)
       )
     );
   },
 
-  renderPanel: function (child) {
+  renderPanel: function (child, index) {
     var activeKey =
       this.props.activeKey != null ? this.props.activeKey : this.state.activeKey;
 
     var props = {
       bsStyle: child.props.bsStyle || this.props.bsStyle,
-      key: child.props.key,
-      ref: child.props.ref
+      key: child.key ? child.key : index,
+      ref: child.ref
     };
 
     if (this.props.accordion) {
       props.collapsable = true;
-      props.expanded = (child.props.key === activeKey);
+      props.expanded = (child.props.eventKey === activeKey);
       props.onSelect = this.handleSelect;
     }
 
@@ -1052,15 +1077,13 @@ var PanelGroup = React.createClass({displayName: 'PanelGroup',
 module.exports = PanelGroup;
 });
 
-define('Accordion',['require','exports','module','react','./PanelGroup'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Accordion',['require','exports','module','react','./PanelGroup'],function (require, exports, module) {var React = require('react');
 var PanelGroup = require('./PanelGroup');
 
 var Accordion = React.createClass({displayName: 'Accordion',
   render: function () {
-    return this.transferPropsTo(
-      PanelGroup( {accordion:true}, 
+    return (
+      React.createElement(PanelGroup, React.__spread({},  this.props, {accordion: true}), 
         this.props.children
       )
     );
@@ -1182,13 +1205,22 @@ module.exports = {
 });
 
 define('utils/EventListener',['require','exports','module'],function (require, exports, module) {/**
- * React EventListener.listen
- *
  * Copyright 2013-2014 Facebook, Inc.
- * @licence https://github.com/facebook/react/blob/0.11-stable/LICENSE
  *
  * This file contains a modified version of:
- *  https://github.com/facebook/react/blob/0.11-stable/src/vendor/stubs/EventListener.js
+ * https://github.com/facebook/react/blob/v0.12.0/src/vendor/stubs/EventListener.js
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * TODO: remove in favour of solution provided by:
  *  https://github.com/facebook/react/issues/285
@@ -1362,9 +1394,8 @@ var AffixMixin = {
 module.exports = AffixMixin;
 });
 
-define('Affix',['require','exports','module','react','./AffixMixin','./utils/domUtils'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Affix',['require','exports','module','react','./utils/joinClasses','./AffixMixin','./utils/domUtils'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var AffixMixin = require('./AffixMixin');
 var domUtils = require('./utils/domUtils');
 
@@ -1377,8 +1408,8 @@ var Affix = React.createClass({displayName: 'Affix',
 
   render: function () {
     var holderStyle = {top: this.state.affixPositionTop};
-    return this.transferPropsTo(
-      React.DOM.div( {className:this.state.affixClass, style:holderStyle}, 
+    return (
+      React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, this.state.affixClass), style: holderStyle}), 
         this.props.children
       )
     );
@@ -1388,9 +1419,8 @@ var Affix = React.createClass({displayName: 'Affix',
 module.exports = Affix;
 });
 
-define('Alert',['require','exports','module','react','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Alert',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 
@@ -1412,12 +1442,12 @@ var Alert = React.createClass({displayName: 'Alert',
 
   renderDismissButton: function () {
     return (
-      React.DOM.button(
-        {type:"button",
-        className:"close",
-        onClick:this.props.onDismiss,
-        'aria-hidden':"true"}, 
-        " × "
+      React.createElement("button", {
+        type: "button", 
+        className: "close", 
+        onClick: this.props.onDismiss, 
+        'aria-hidden': "true"}, 
+        "×"
       )
     );
   },
@@ -1428,9 +1458,9 @@ var Alert = React.createClass({displayName: 'Alert',
 
     classes['alert-dismissable'] = isDismissable;
 
-    return this.transferPropsTo(
-      React.DOM.div( {className:classSet(classes)}, 
-        isDismissable ? this.renderDismissButton() : null,
+    return (
+      React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
+        isDismissable ? this.renderDismissButton() : null, 
         this.props.children
       )
     );
@@ -1450,24 +1480,26 @@ var Alert = React.createClass({displayName: 'Alert',
 module.exports = Alert;
 });
 
-define('Badge',['require','exports','module','react','./utils/ValidComponentChildren','./utils/classSet'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Badge',['require','exports','module','react','./utils/joinClasses','./utils/ValidComponentChildren','./utils/classSet'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
 var classSet = require('./utils/classSet');
 
 var Badge = React.createClass({displayName: 'Badge',
   propTypes: {
-    pullRight: React.PropTypes.bool,
+    pullRight: React.PropTypes.bool
   },
 
   render: function () {
     var classes = {
       'pull-right': this.props.pullRight,
-      'badge': ValidComponentChildren.hasValidComponent(this.props.children)
+      'badge': (ValidComponentChildren.hasValidComponent(this.props.children)
+        || (typeof this.props.children === 'string'))
     };
-    return this.transferPropsTo(
-      React.DOM.span( {className:classSet(classes)}, 
+    return (
+      React.createElement("span", React.__spread({}, 
+        this.props, 
+        {className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.children
       )
     );
@@ -1478,99 +1510,10 @@ module.exports = Badge;
 
 });
 
-define('utils/CustomPropTypes',['require','exports','module','react'],function (require, exports, module) {var React = require('react');
-
-var ANONYMOUS = '<<anonymous>>';
-
-var CustomPropTypes = {
-  /**
-   * Checks whether a prop is a valid React class
-   *
-   * @param props
-   * @param propName
-   * @param componentName
-   * @returns {Error|undefined}
-   */
-  componentClass: createComponentClassChecker(),
-
-  /**
-   * Checks whether a prop provides a DOM element
-   *
-   * The element can be provided in two forms:
-   * - Directly passed
-   * - Or passed an object which has a `getDOMNode` method which will return the required DOM element
-   *
-   * @param props
-   * @param propName
-   * @param componentName
-   * @returns {Error|undefined}
-   */
-  mountable: createMountableChecker()
-};
-
-/**
- * Create chain-able isRequired validator
- *
- * Largely copied directly from:
- *  https://github.com/facebook/react/blob/0.11-stable/src/core/ReactPropTypes.js#L94
- */
-function createChainableTypeChecker(validate) {
-  function checkType(isRequired, props, propName, componentName) {
-    componentName = componentName || ANONYMOUS;
-    if (props[propName] == null) {
-      if (isRequired) {
-        return new Error(
-          'Required prop `' + propName + '` was not specified in ' +
-            '`' + componentName + '`.'
-        );
-      }
-    } else {
-      return validate(props, propName, componentName);
-    }
-  }
-
-  var chainedCheckType = checkType.bind(null, false);
-  chainedCheckType.isRequired = checkType.bind(null, true);
-
-  return chainedCheckType;
-}
-
-function createComponentClassChecker() {
-  function validate(props, propName, componentName) {
-    if (!React.isValidClass(props[propName])) {
-      return new Error(
-        'Invalid prop `' + propName + '` supplied to ' +
-          '`' + componentName + '`, expected a valid React class.'
-      );
-    }
-  }
-
-  return createChainableTypeChecker(validate);
-}
-
-function createMountableChecker() {
-  function validate(props, propName, componentName) {
-    if (typeof props[propName] !== 'object' ||
-      typeof props[propName].getDOMNode !== 'function' && props[propName].nodeType !== 1) {
-      return new Error(
-        'Invalid prop `' + propName + '` supplied to ' +
-          '`' + componentName + '`, expected a DOM element or an object that has a `getDOMNode` method'
-      );
-    }
-  }
-
-  return createChainableTypeChecker(validate);
-}
-
-module.exports = CustomPropTypes;
-});
-
-define('Button',['require','exports','module','react','./utils/classSet','./BootstrapMixin','./utils/CustomPropTypes'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Button',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
-var CustomPropTypes = require('./utils/CustomPropTypes');
 
 var Button = React.createClass({displayName: 'Button',
   mixins: [BootstrapMixin],
@@ -1581,7 +1524,7 @@ var Button = React.createClass({displayName: 'Button',
     block:    React.PropTypes.bool,
     navItem:    React.PropTypes.bool,
     navDropdown: React.PropTypes.bool,
-    componentClass: CustomPropTypes.componentClass
+    componentClass: React.PropTypes.node
   },
 
   getDefaultProps: function () {
@@ -1610,26 +1553,29 @@ var Button = React.createClass({displayName: 'Button',
   },
 
   renderAnchor: function (classes) {
-    var component = this.props.componentClass || React.DOM.a;
+
+    var Component = this.props.componentClass || 'a';
     var href = this.props.href || '#';
     classes['disabled'] = this.props.disabled;
 
-    return this.transferPropsTo(
-      component(
-        {href:href,
-        className:classSet(classes),
-        role:"button"}, 
+    return (
+      React.createElement(Component, React.__spread({}, 
+        this.props, 
+        {href: href, 
+        className: joinClasses(this.props.className, classSet(classes)), 
+        role: "button"}), 
         this.props.children
       )
     );
   },
 
   renderButton: function (classes) {
-    var component = this.props.componentClass || React.DOM.button;
+    var Component = this.props.componentClass || 'button';
 
-    return this.transferPropsTo(
-      component(
-        {className:classSet(classes)}, 
+    return (
+      React.createElement(Component, React.__spread({}, 
+        this.props, 
+        {className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.children
       )
     );
@@ -1641,7 +1587,7 @@ var Button = React.createClass({displayName: 'Button',
     };
 
     return (
-      React.DOM.li( {className:classSet(liClasses)}, 
+      React.createElement("li", {className: classSet(liClasses)}, 
         this.renderAnchor(classes)
       )
     );
@@ -1652,9 +1598,8 @@ module.exports = Button;
 
 });
 
-define('ButtonGroup',['require','exports','module','react','./utils/classSet','./BootstrapMixin','./Button'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('ButtonGroup',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin','./Button'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 var Button = require('./Button');
@@ -1679,9 +1624,10 @@ var ButtonGroup = React.createClass({displayName: 'ButtonGroup',
     classes['btn-group-vertical'] = this.props.vertical;
     classes['btn-group-justified'] = this.props.justified;
 
-    return this.transferPropsTo(
-      React.DOM.div(
-        {className:classSet(classes)}, 
+    return (
+      React.createElement("div", React.__spread({}, 
+        this.props, 
+        {className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.children
       )
     );
@@ -1691,14 +1637,13 @@ var ButtonGroup = React.createClass({displayName: 'ButtonGroup',
 module.exports = ButtonGroup;
 });
 
-define('ButtonToolbar',['require','exports','module','react','./utils/classSet','./BootstrapMixin','./Button'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('ButtonToolbar',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin','./Button'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 var Button = require('./Button');
 
-var ButtonGroup = React.createClass({displayName: 'ButtonGroup',
+var ButtonToolbar = React.createClass({displayName: 'ButtonToolbar',
   mixins: [BootstrapMixin],
 
   getDefaultProps: function () {
@@ -1710,22 +1655,22 @@ var ButtonGroup = React.createClass({displayName: 'ButtonGroup',
   render: function () {
     var classes = this.getBsClassSet();
 
-    return this.transferPropsTo(
-      React.DOM.div(
-        {role:"toolbar",
-        className:classSet(classes)}, 
+    return (
+      React.createElement("div", React.__spread({}, 
+        this.props, 
+        {role: "toolbar", 
+        className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.children
       )
     );
   }
 });
 
-module.exports = ButtonGroup;
+module.exports = ButtonToolbar;
 });
 
-define('Carousel',['require','exports','module','react','./utils/classSet','./utils/cloneWithProps','./BootstrapMixin','./utils/ValidComponentChildren'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Carousel',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./utils/cloneWithProps','./BootstrapMixin','./utils/ValidComponentChildren'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var cloneWithProps = require('./utils/cloneWithProps');
 var BootstrapMixin = require('./BootstrapMixin');
@@ -1867,15 +1812,16 @@ var Carousel = React.createClass({displayName: 'Carousel',
       slide: this.props.slide
     };
 
-    return this.transferPropsTo(
-      React.DOM.div(
-        {className:classSet(classes),
-        onMouseOver:this.handleMouseOver,
-        onMouseOut:this.handleMouseOut}, 
-        this.props.indicators ? this.renderIndicators() : null,
-        React.DOM.div( {className:"carousel-inner", ref:"inner"}, 
+    return (
+      React.createElement("div", React.__spread({}, 
+        this.props, 
+        {className: joinClasses(this.props.className, classSet(classes)), 
+        onMouseOver: this.handleMouseOver, 
+        onMouseOut: this.handleMouseOut}), 
+        this.props.indicators ? this.renderIndicators() : null, 
+        React.createElement("div", {className: "carousel-inner", ref: "inner"}, 
           ValidComponentChildren.map(this.props.children, this.renderItem)
-        ),
+        ), 
         this.props.controls ? this.renderControls() : null
       )
     );
@@ -1883,16 +1829,16 @@ var Carousel = React.createClass({displayName: 'Carousel',
 
   renderPrev: function () {
     return (
-      React.DOM.a( {className:"left carousel-control", href:"#prev", key:0, onClick:this.prev}, 
-        React.DOM.span( {className:"glyphicon glyphicon-chevron-left"} )
+      React.createElement("a", {className: "left carousel-control", href: "#prev", key: 0, onClick: this.prev}, 
+        React.createElement("span", {className: "glyphicon glyphicon-chevron-left"})
       )
     );
   },
 
   renderNext: function () {
     return (
-      React.DOM.a( {className:"right carousel-control", href:"#next", key:1, onClick:this.next}, 
-        React.DOM.span( {className:"glyphicon glyphicon-chevron-right"})
+      React.createElement("a", {className: "right carousel-control", href: "#next", key: 1, onClick: this.next}, 
+        React.createElement("span", {className: "glyphicon glyphicon-chevron-right"})
       )
     );
   },
@@ -1919,10 +1865,10 @@ var Carousel = React.createClass({displayName: 'Carousel',
       'active' : null;
 
     return (
-      React.DOM.li(
-        {key:index,
-        className:className,
-        onClick:this.handleSelect.bind(this, index, null)} )
+      React.createElement("li", {
+        key: index, 
+        className: className, 
+        onClick: this.handleSelect.bind(this, index, null)})
     );
   },
 
@@ -1940,7 +1886,7 @@ var Carousel = React.createClass({displayName: 'Carousel',
       }, this);
 
     return (
-      React.DOM.ol( {className:"carousel-indicators"}, 
+      React.createElement("ol", {className: "carousel-indicators"}, 
         indicators
       )
     );
@@ -1973,9 +1919,8 @@ var Carousel = React.createClass({displayName: 'Carousel',
         child,
         {
           active: isActive,
-          ref: child.props.ref,
-          key: child.props.key != null ?
-            child.props.key : index,
+          ref: child.ref,
+          key: child.key ? child.key : index,
           index: index,
           animateOut: isPreviousActive,
           animateIn: isActive && this.state.previousActiveIndex != null && this.props.slide,
@@ -2016,14 +1961,16 @@ module.exports = Carousel;
 });
 
 define('utils/TransitionEvents',['require','exports','module'],function (require, exports, module) {/**
- * React TransitionEvents
- *
- * Copyright 2013-2014 Facebook, Inc.
- * @licence https://github.com/facebook/react/blob/0.11-stable/LICENSE
+ * Copyright 2013-2014, Facebook, Inc.
+ * All rights reserved.
  *
  * This file contains a modified version of:
- *  https://github.com/facebook/react/blob/0.11-stable/src/addons/transitions/ReactTransitionEvents.js
+ * https://github.com/facebook/react/blob/v0.12.0/src/addons/transitions/ReactTransitionEvents.js
  *
+ * This source code is licensed under the BSD-style license found here:
+ * https://github.com/facebook/react/blob/v0.12.0/LICENSE
+ * An additional grant of patent rights can be found here:
+ * https://github.com/facebook/react/blob/v0.12.0/PATENTS
  */
 
 var canUseDOM = !!(
@@ -2129,9 +2076,8 @@ module.exports = ReactTransitionEvents;
 
 });
 
-define('CarouselItem',['require','exports','module','react','./utils/classSet','./utils/TransitionEvents'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('CarouselItem',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./utils/TransitionEvents'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var TransitionEvents = require('./utils/TransitionEvents');
 
@@ -2140,7 +2086,7 @@ var CarouselItem = React.createClass({displayName: 'CarouselItem',
     direction: React.PropTypes.oneOf(['prev', 'next']),
     onAnimateOutEnd: React.PropTypes.func,
     active: React.PropTypes.bool,
-    caption: React.PropTypes.renderable
+    caption: React.PropTypes.node
   },
 
   getInitialState: function () {
@@ -2205,9 +2151,9 @@ var CarouselItem = React.createClass({displayName: 'CarouselItem',
       classes[this.state.direction] = true;
     }
 
-    return this.transferPropsTo(
-      React.DOM.div( {className:classSet(classes)}, 
-        this.props.children,
+    return (
+      React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
+        this.props.children, 
         this.props.caption ? this.renderCaption() : null
       )
     );
@@ -2215,7 +2161,7 @@ var CarouselItem = React.createClass({displayName: 'CarouselItem',
 
   renderCaption: function () {
     return (
-      React.DOM.div( {className:"carousel-caption"}, 
+      React.createElement("div", {className: "carousel-caption"}, 
         this.props.caption
       )
     );
@@ -2225,11 +2171,9 @@ var CarouselItem = React.createClass({displayName: 'CarouselItem',
 module.exports = CarouselItem;
 });
 
-define('Col',['require','exports','module','react','./utils/classSet','./utils/CustomPropTypes','./constants'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Col',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./constants'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
-var CustomPropTypes = require('./utils/CustomPropTypes');
 var constants = require('./constants');
 
 
@@ -2251,17 +2195,17 @@ var Col = React.createClass({displayName: 'Col',
     smPull: React.PropTypes.number,
     mdPull: React.PropTypes.number,
     lgPull: React.PropTypes.number,
-    componentClass: CustomPropTypes.componentClass.isRequired
+    componentClass: React.PropTypes.node.isRequired
   },
 
   getDefaultProps: function () {
     return {
-      componentClass: React.DOM.div
+      componentClass: 'div'
     };
   },
 
   render: function () {
-    var componentClass = this.props.componentClass;
+    var ComponentClass = this.props.componentClass;
     var classes = {};
 
     Object.keys(constants.SIZES).forEach(function (key) {
@@ -2292,8 +2236,8 @@ var Col = React.createClass({displayName: 'Col',
       }
     }, this);
 
-    return this.transferPropsTo(
-      componentClass( {className:classSet(classes)}, 
+    return (
+      React.createElement(ComponentClass, React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.children
       )
     );
@@ -2352,7 +2296,7 @@ var CollapsableMixin = {
     var node = this.getCollapsableDOMNode();
 
     if (node) {
-      TransitionEvents.addEndEventListener(
+      TransitionEvents.removeEndEventListener(
         node,
         this.handleTransitionEnd
       );
@@ -2399,8 +2343,12 @@ var CollapsableMixin = {
     var node = this.getCollapsableDOMNode();
 
     if (node) {
-      node.style[dimension] = this.isExpanded() ?
-        this.getCollapsableDimensionValue() + 'px' : '0px';
+        if(this.isExpanded() && !this.state.collapsing) {
+            node.style[dimension] = 'auto';
+        } else {
+            node.style[dimension] = this.isExpanded() ?
+              this.getCollapsableDimensionValue() + 'px' : '0px';
+        }
     }
   },
 
@@ -2429,6 +2377,7 @@ var CollapsableMixin = {
 };
 
 module.exports = CollapsableMixin;
+
 });
 
 define('utils/createChainedFunction',['require','exports','module'],function (require, exports, module) {/**
@@ -2540,11 +2489,11 @@ var DropdownStateMixin = {
 module.exports = DropdownStateMixin;
 });
 
-define('DropdownMenu',['require','exports','module','react','./utils/classSet','./utils/cloneWithProps','./utils/createChainedFunction','./utils/ValidComponentChildren'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('DropdownMenu',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./utils/cloneWithProps','./utils/createChainedFunction','./utils/ValidComponentChildren'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var createChainedFunction = require('./utils/createChainedFunction');
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
 
@@ -2560,16 +2509,17 @@ var DropdownMenu = React.createClass({displayName: 'DropdownMenu',
         'dropdown-menu-right': this.props.pullRight
       };
 
-    return this.transferPropsTo(
-        React.DOM.ul(
-          {className:classSet(classes),
-          role:"menu"}, 
+    return (
+        React.createElement("ul", React.__spread({}, 
+          this.props, 
+          {className: joinClasses(this.props.className, classSet(classes)), 
+          role: "menu"}), 
           ValidComponentChildren.map(this.props.children, this.renderMenuItem)
         )
       );
   },
 
-  renderMenuItem: function (child) {
+  renderMenuItem: function (child, index) {
     return cloneWithProps(
       child,
       {
@@ -2577,8 +2527,8 @@ var DropdownMenu = React.createClass({displayName: 'DropdownMenu',
         onSelect: createChainedFunction(child.props.onSelect, this.props.onSelect),
 
         // Force special props to be transferred
-        key: child.props.key,
-        ref: child.props.ref
+        key: child.key ? child.key : index,
+        ref: child.ref
       }
     );
   }
@@ -2587,11 +2537,11 @@ var DropdownMenu = React.createClass({displayName: 'DropdownMenu',
 module.exports = DropdownMenu;
 });
 
-define('DropdownButton',['require','exports','module','react','./utils/classSet','./utils/cloneWithProps','./utils/createChainedFunction','./BootstrapMixin','./DropdownStateMixin','./Button','./ButtonGroup','./DropdownMenu','./utils/ValidComponentChildren'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('DropdownButton',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./utils/cloneWithProps','./utils/createChainedFunction','./BootstrapMixin','./DropdownStateMixin','./Button','./ButtonGroup','./DropdownMenu','./utils/ValidComponentChildren'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var createChainedFunction = require('./utils/createChainedFunction');
 var BootstrapMixin = require('./BootstrapMixin');
 var DropdownStateMixin = require('./DropdownStateMixin');
@@ -2607,7 +2557,7 @@ var DropdownButton = React.createClass({displayName: 'DropdownButton',
   propTypes: {
     pullRight: React.PropTypes.bool,
     dropup:    React.PropTypes.bool,
-    title:     React.PropTypes.renderable,
+    title:     React.PropTypes.node,
     href:      React.PropTypes.string,
     onClick:   React.PropTypes.func,
     onSelect:  React.PropTypes.func,
@@ -2621,24 +2571,25 @@ var DropdownButton = React.createClass({displayName: 'DropdownButton',
       'renderNavItem' : 'renderButtonGroup';
 
     return this[renderMethod]([
-      this.transferPropsTo(Button(
-        {ref:"dropdownButton",
-        className:className,
-        onClick:this.handleDropdownClick,
-        key:0,
-        navDropdown:this.props.navItem,
-        navItem:null,
-        title:null,
-        pullRight:null,
-        dropup:null}, 
-        this.props.title,' ',
-        React.DOM.span( {className:"caret"} )
-      )),
-      DropdownMenu(
-        {ref:"menu",
-        'aria-labelledby':this.props.id,
-        pullRight:this.props.pullRight,
-        key:1}, 
+      React.createElement(Button, React.__spread({}, 
+        this.props, 
+        {ref: "dropdownButton", 
+        className: joinClasses(this.props.className, className), 
+        onClick: this.handleDropdownClick, 
+        key: 0, 
+        navDropdown: this.props.navItem, 
+        navItem: null, 
+        title: null, 
+        pullRight: null, 
+        dropup: null}), 
+        this.props.title, ' ', 
+        React.createElement("span", {className: "caret"})
+      ),
+      React.createElement(DropdownMenu, {
+        ref: "menu", 
+        'aria-labelledby': this.props.id, 
+        pullRight: this.props.pullRight, 
+        key: 1}, 
         ValidComponentChildren.map(this.props.children, this.renderMenuItem)
       )
     ]);
@@ -2651,9 +2602,9 @@ var DropdownButton = React.createClass({displayName: 'DropdownButton',
       };
 
     return (
-      ButtonGroup(
-        {bsSize:this.props.bsSize,
-        className:classSet(groupClasses)}, 
+      React.createElement(ButtonGroup, {
+        bsSize: this.props.bsSize, 
+        className: classSet(groupClasses)}, 
         children
       )
     );
@@ -2667,13 +2618,13 @@ var DropdownButton = React.createClass({displayName: 'DropdownButton',
       };
 
     return (
-      React.DOM.li( {className:classSet(classes)}, 
+      React.createElement("li", {className: classSet(classes)}, 
         children
       )
     );
   },
 
-  renderMenuItem: function (child) {
+  renderMenuItem: function (child, index) {
     // Only handle the option selection if an onSelect prop has been set on the
     // component or it's child, this allows a user not to pass an onSelect
     // handler and have the browser preform the default action.
@@ -2687,8 +2638,8 @@ var DropdownButton = React.createClass({displayName: 'DropdownButton',
         onSelect: createChainedFunction(child.props.onSelect, handleOptionSelect),
 
         // Force special props to be transferred
-        key: child.props.key,
-        ref: child.props.ref
+        key: child.key ? child.key : index,
+        ref: child.ref
       }
     );
   },
@@ -2754,10 +2705,11 @@ module.exports = {
   },
 
   componentWillUnmount: function () {
-    var els = this.getDOMNode().querySelectorAll('.fade');
+    var els = this.getDOMNode().querySelectorAll('.fade'),
+        container = (this.props.container && this.props.container.getDOMNode()) || document.body;
     if (els.length) {
       this._fadeOutEl = document.createElement('div');
-      document.body.appendChild(this._fadeOutEl);
+      container.appendChild(this._fadeOutEl);
       this._fadeOutEl.appendChild(this.getDOMNode().cloneNode(true));
       // Firefox needs delay for transition to be triggered
       setTimeout(this._fadeOut, 20);
@@ -2767,9 +2719,8 @@ module.exports = {
 
 });
 
-define('Glyphicon',['require','exports','module','react','./utils/classSet','./BootstrapMixin','./constants'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Glyphicon',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin','./constants'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 var constants = require('./constants');
@@ -2792,8 +2743,8 @@ var Glyphicon = React.createClass({displayName: 'Glyphicon',
 
     classes['glyphicon-' + this.props.glyph] = true;
 
-    return this.transferPropsTo(
-      React.DOM.span( {className:classSet(classes)}, 
+    return (
+      React.createElement("span", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.children
       )
     );
@@ -2803,29 +2754,29 @@ var Glyphicon = React.createClass({displayName: 'Glyphicon',
 module.exports = Glyphicon;
 });
 
-define('Grid',['require','exports','module','react','./utils/CustomPropTypes'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
-var CustomPropTypes = require('./utils/CustomPropTypes');
-
+define('Grid',['require','exports','module','react','./utils/joinClasses'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 
 var Grid = React.createClass({displayName: 'Grid',
   propTypes: {
     fluid: React.PropTypes.bool,
-    componentClass: CustomPropTypes.componentClass.isRequired
+    componentClass: React.PropTypes.node.isRequired
   },
 
   getDefaultProps: function () {
     return {
-      componentClass: React.DOM.div
+      componentClass: 'div'
     };
   },
 
   render: function () {
-    var componentClass = this.props.componentClass;
+    var ComponentClass = this.props.componentClass;
+    var className = this.props.fluid ? 'container-fluid' : 'container';
 
-    return this.transferPropsTo(
-      componentClass( {className:this.props.fluid ? 'container-fluid' : 'container'}, 
+    return (
+      React.createElement(ComponentClass, React.__spread({}, 
+        this.props, 
+        {className: joinClasses(this.props.className, className)}), 
         this.props.children
       )
     );
@@ -2835,19 +2786,18 @@ var Grid = React.createClass({displayName: 'Grid',
 module.exports = Grid;
 });
 
-define('Input',['require','exports','module','react','./utils/classSet','./Button'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Input',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./Button'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var Button = require('./Button');
 
 var Input = React.createClass({displayName: 'Input',
   propTypes: {
     type: React.PropTypes.string,
-    label: React.PropTypes.renderable,
-    help: React.PropTypes.renderable,
-    addonBefore: React.PropTypes.renderable,
-    addonAfter: React.PropTypes.renderable,
+    label: React.PropTypes.node,
+    help: React.PropTypes.node,
+    addonBefore: React.PropTypes.node,
+    addonAfter: React.PropTypes.node,
     bsStyle: function(props) {
       if (props.type === 'submit') {
         // Return early if `type=submit` as the `Button` component
@@ -2860,7 +2810,8 @@ var Input = React.createClass({displayName: 'Input',
     hasFeedback: React.PropTypes.bool,
     groupClassName: React.PropTypes.string,
     wrapperClassName: React.PropTypes.string,
-    labelClassName: React.PropTypes.string
+    labelClassName: React.PropTypes.string,
+    disabled: React.PropTypes.bool
   },
 
   getInputDOMNode: function () {
@@ -2887,6 +2838,10 @@ var Input = React.createClass({displayName: 'Input',
     return this.props.type === 'radio' || this.props.type === 'checkbox';
   },
 
+  isFile: function () {
+    return this.props.type === 'file';
+  },
+
   renderInput: function () {
     var input = null;
 
@@ -2897,51 +2852,51 @@ var Input = React.createClass({displayName: 'Input',
     switch (this.props.type) {
       case 'select':
         input = (
-          React.DOM.select( {className:"form-control", ref:"input", key:"input"}, 
+          React.createElement("select", React.__spread({},  this.props, {className: joinClasses(this.props.className, 'form-control'), ref: "input", key: "input"}), 
             this.props.children
           )
         );
         break;
       case 'textarea':
-        input = React.DOM.textarea( {className:"form-control", ref:"input", key:"input"} );
+        input = React.createElement("textarea", React.__spread({},  this.props, {className: joinClasses(this.props.className, 'form-control'), ref: "input", key: "input"}));
         break;
       case 'static':
         input = (
-          React.DOM.p( {className:"form-control-static", ref:"input",  key:"input"}, 
+          React.createElement("p", React.__spread({},  this.props, {className: joinClasses(this.props.className, 'form-control-static'), ref: "input", key: "input"}), 
             this.props.value
           )
         );
         break;
       case 'submit':
-        input = this.transferPropsTo(
-          Button( {componentClass:React.DOM.input} )
+        input = (
+          React.createElement(Button, React.__spread({},  this.props, {componentClass: "input", ref: "input", key: "input"}))
         );
         break;
       default:
-        var className = this.isCheckboxOrRadio() ? '' : 'form-control';
-        input = React.DOM.input( {className:className, ref:"input", key:"input"} );
+        var className = this.isCheckboxOrRadio() || this.isFile() ? '' : 'form-control';
+        input = React.createElement("input", React.__spread({},  this.props, {className: joinClasses(this.props.className, className), ref: "input", key: "input"}));
     }
 
-    return this.transferPropsTo(input);
+    return input;
   },
 
   renderInputGroup: function (children) {
     var addonBefore = this.props.addonBefore ? (
-      React.DOM.span( {className:"input-group-addon", key:"addonBefore"}, 
+      React.createElement("span", {className: "input-group-addon", key: "addonBefore"}, 
         this.props.addonBefore
       )
     ) : null;
 
     var addonAfter = this.props.addonAfter ? (
-      React.DOM.span( {className:"input-group-addon", key:"addonAfter"}, 
+      React.createElement("span", {className: "input-group-addon", key: "addonAfter"}, 
         this.props.addonAfter
       )
     ) : null;
 
     return addonBefore || addonAfter ? (
-      React.DOM.div( {className:"input-group", key:"input-group"}, 
-        addonBefore,
-        children,
+      React.createElement("div", {className: "input-group", key: "input-group"}, 
+        addonBefore, 
+        children, 
         addonAfter
       )
     ) : children;
@@ -2957,13 +2912,13 @@ var Input = React.createClass({displayName: 'Input',
     };
 
     return this.props.hasFeedback ? (
-      React.DOM.span( {className:classSet(classes), key:"icon"} )
+      React.createElement("span", {className: classSet(classes), key: "icon"})
     ) : null;
   },
 
   renderHelp: function () {
     return this.props.help ? (
-      React.DOM.span( {className:"help-block", key:"help"}, 
+      React.createElement("span", {className: "help-block", key: "help"}, 
         this.props.help
       )
     ) : null;
@@ -2976,7 +2931,7 @@ var Input = React.createClass({displayName: 'Input',
     };
 
     return (
-      React.DOM.div( {className:classSet(classes), key:"checkboxRadioWrapper"}, 
+      React.createElement("div", {className: classSet(classes), key: "checkboxRadioWrapper"}, 
         children
       )
     );
@@ -2984,7 +2939,7 @@ var Input = React.createClass({displayName: 'Input',
 
   renderWrapper: function (children) {
     return this.props.wrapperClassName ? (
-      React.DOM.div( {className:this.props.wrapperClassName, key:"wrapper"}, 
+      React.createElement("div", {className: this.props.wrapperClassName, key: "wrapper"}, 
         children
       )
     ) : children;
@@ -2997,8 +2952,8 @@ var Input = React.createClass({displayName: 'Input',
     classes[this.props.labelClassName] = this.props.labelClassName;
 
     return this.props.label ? (
-      React.DOM.label( {htmlFor:this.props.id, className:classSet(classes), key:"label"}, 
-        children,
+      React.createElement("label", {htmlFor: this.props.id, className: classSet(classes), key: "label"}, 
+        children, 
         this.props.label
       )
     ) : children;
@@ -3015,7 +2970,7 @@ var Input = React.createClass({displayName: 'Input',
     classes[this.props.groupClassName] = this.props.groupClassName;
 
     return (
-      React.DOM.div( {className:classSet(classes)}, 
+      React.createElement("div", {className: classSet(classes)}, 
         children
       )
     );
@@ -3053,12 +3008,12 @@ module.exports = Input;
 
 });
 
-define('Interpolate',['require','exports','module','react','./utils/merge','./utils/ValidComponentChildren'],function (require, exports, module) {// https://www.npmjs.org/package/react-interpolate-component
+define('Interpolate',['require','exports','module','react','./utils/ValidComponentChildren','./utils/Object.assign'],function (require, exports, module) {// https://www.npmjs.org/package/react-interpolate-component
 
 
 var React = require('react');
-var merge = require('./utils/merge');
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
+var assign = require('./utils/Object.assign');
 
 var REGEXP = /\%\((.+?)\)s/;
 
@@ -3070,14 +3025,16 @@ var Interpolate = React.createClass({
   },
 
   getDefaultProps: function() {
-    return { component: React.DOM.span };
+    return { component: 'span' };
   },
 
   render: function() {
-    var format = ValidComponentChildren.hasValidComponent(this.props.children) ? this.props.children : this.props.format;
+    var format = (ValidComponentChildren.hasValidComponent(this.props.children) ||
+        (typeof this.props.children === 'string')) ?
+        this.props.children : this.props.format;
     var parent = this.props.component;
     var unsafe = this.props.unsafe === true;
-    var props = merge(this.props);
+    var props = assign({}, this.props);
 
     delete props.children;
     delete props.format;
@@ -3095,7 +3052,7 @@ var Interpolate = React.createClass({
           delete props[match];
         }
 
-        if (React.isValidComponent(html)) {
+        if (React.isValidElement(html)) {
           throw new Error('cannot interpolate a React component into unsafe text');
         }
 
@@ -3106,9 +3063,9 @@ var Interpolate = React.createClass({
 
       props.dangerouslySetInnerHTML = { __html: content };
 
-      return parent(props);
+      return React.createElement(parent, props);
     } else {
-      var args = format.split(REGEXP).reduce(function(memo, match, index) {
+      var kids = format.split(REGEXP).reduce(function(memo, match, index) {
         var child;
 
         if (index % 2 === 0) {
@@ -3125,9 +3082,9 @@ var Interpolate = React.createClass({
         memo.push(child);
 
         return memo;
-      }, [props]);
+      }, []);
 
-      return parent.apply(null, args);
+      return React.createElement(parent, props, kids);
     }
   }
 });
@@ -3136,15 +3093,14 @@ module.exports = Interpolate;
 
 });
 
-define('Jumbotron',['require','exports','module','react'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Jumbotron',['require','exports','module','react','./utils/joinClasses'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 
 var Jumbotron = React.createClass({displayName: 'Jumbotron',
 
   render: function () {
-    return this.transferPropsTo(
-      React.DOM.div( {className:"jumbotron"}, 
+    return (
+      React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, 'jumbotron')}), 
         this.props.children
       )
     );
@@ -3154,9 +3110,8 @@ var Jumbotron = React.createClass({displayName: 'Jumbotron',
 module.exports = Jumbotron;
 });
 
-define('Label',['require','exports','module','react','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Label',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 
@@ -3173,8 +3128,8 @@ var Label = React.createClass({displayName: 'Label',
   render: function () {
     var classes = this.getBsClassSet();
 
-    return this.transferPropsTo(
-      React.DOM.span( {className:classSet(classes)}, 
+    return (
+      React.createElement("span", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.children
       )
     );
@@ -3184,11 +3139,10 @@ var Label = React.createClass({displayName: 'Label',
 module.exports = Label;
 });
 
-define('ListGroup',['require','exports','module','react','./utils/classSet','./utils/cloneWithProps','./utils/ValidComponentChildren','./utils/createChainedFunction'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('ListGroup',['require','exports','module','react','./utils/classSet','./utils/cloneWithProps','./utils/ValidComponentChildren','./utils/createChainedFunction'],function (require, exports, module) {var React = require('react');
 var classSet = require('./utils/classSet');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
 var createChainedFunction = require('./utils/createChainedFunction');
 
@@ -3199,17 +3153,17 @@ var ListGroup = React.createClass({displayName: 'ListGroup',
 
   render: function () {
     return (
-      React.DOM.div( {className:"list-group"}, 
+      React.createElement("div", {className: "list-group"}, 
         ValidComponentChildren.map(this.props.children, this.renderListItem)
       )
     );
   },
 
-  renderListItem: function (child) {
+  renderListItem: function (child, index) {
     return cloneWithProps(child, {
       onClick: createChainedFunction(child.props.onClick, this.props.onClick),
-      ref: child.props.ref,
-      key: child.props.key
+      ref: child.ref,
+      key: child.key ? child.key : index
     });
   }
 });
@@ -3218,12 +3172,12 @@ module.exports = ListGroup;
 
 });
 
-define('ListGroupItem',['require','exports','module','react','./BootstrapMixin','./utils/classSet','./utils/cloneWithProps','./utils/ValidComponentChildren'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('ListGroupItem',['require','exports','module','react','./utils/joinClasses','./BootstrapMixin','./utils/classSet','./utils/cloneWithProps','./utils/ValidComponentChildren'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var BootstrapMixin = require('./BootstrapMixin');
 var classSet = require('./utils/classSet');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
 
 var ListGroupItem = React.createClass({displayName: 'ListGroupItem',
@@ -3233,8 +3187,9 @@ var ListGroupItem = React.createClass({displayName: 'ListGroupItem',
     bsStyle: React.PropTypes.oneOf(['danger','info','success','warning']),
     active: React.PropTypes.any,
     disabled: React.PropTypes.any,
-    header: React.PropTypes.renderable,
-    onClick: React.PropTypes.func
+    header: React.PropTypes.node,
+    onClick: React.PropTypes.func,
+    eventKey: React.PropTypes.any
   },
 
   getDefaultProps: function () {
@@ -3257,18 +3212,19 @@ var ListGroupItem = React.createClass({displayName: 'ListGroupItem',
   },
 
   renderSpan: function (classes) {
-    return this.transferPropsTo(
-      React.DOM.span( {className:classSet(classes)}, 
+    return (
+      React.createElement("span", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.header ? this.renderStructuredContent() : this.props.children
       )
     );
   },
 
   renderAnchor: function (classes) {
-    return this.transferPropsTo(
-      React.DOM.a(
-        {className:classSet(classes),
-        onClick:this.handleClick}, 
+    return (
+      React.createElement("a", React.__spread({}, 
+        this.props, 
+        {className: joinClasses(this.props.className, classSet(classes)), 
+        onClick: this.handleClick}), 
         this.props.header ? this.renderStructuredContent() : this.props.children
       )
     );
@@ -3276,20 +3232,20 @@ var ListGroupItem = React.createClass({displayName: 'ListGroupItem',
 
   renderStructuredContent: function () {
     var header;
-    if (React.isValidComponent(this.props.header)) {
+    if (React.isValidElement(this.props.header)) {
       header = cloneWithProps(this.props.header, {
         className: 'list-group-item-heading'
       });
     } else {
       header = (
-        React.DOM.h4( {className:"list-group-item-heading"}, 
+        React.createElement("h4", {className: "list-group-item-heading"}, 
           this.props.header
         )
       );
     }
 
     var content = (
-      React.DOM.p( {className:"list-group-item-text"}, 
+      React.createElement("p", {className: "list-group-item-text"}, 
         this.props.children
       )
     );
@@ -3303,7 +3259,7 @@ var ListGroupItem = React.createClass({displayName: 'ListGroupItem',
   handleClick: function (e) {
     if (this.props.onClick) {
       e.preventDefault();
-      this.props.onClick(this.props.key, this.props.href);
+      this.props.onClick(this.props.eventKey, this.props.href);
     }
   }
 });
@@ -3312,18 +3268,18 @@ module.exports = ListGroupItem;
 
 });
 
-define('MenuItem',['require','exports','module','react','./utils/classSet'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('MenuItem',['require','exports','module','react','./utils/joinClasses','./utils/classSet'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 
 var MenuItem = React.createClass({displayName: 'MenuItem',
   propTypes: {
-    header:   React.PropTypes.bool,
-    divider:  React.PropTypes.bool,
-    href:     React.PropTypes.string,
-    title:    React.PropTypes.string,
-    onSelect: React.PropTypes.func
+    header:    React.PropTypes.bool,
+    divider:   React.PropTypes.bool,
+    href:      React.PropTypes.string,
+    title:     React.PropTypes.string,
+    onSelect:  React.PropTypes.func,
+    eventKey: React.PropTypes.any
   },
 
   getDefaultProps: function () {
@@ -3335,13 +3291,13 @@ var MenuItem = React.createClass({displayName: 'MenuItem',
   handleClick: function (e) {
     if (this.props.onSelect) {
       e.preventDefault();
-      this.props.onSelect(this.props.key);
+      this.props.onSelect(this.props.eventKey);
     }
   },
 
   renderAnchor: function () {
     return (
-      React.DOM.a( {onClick:this.handleClick, href:this.props.href, title:this.props.title, tabIndex:"-1"}, 
+      React.createElement("a", {onClick: this.handleClick, href: this.props.href, title: this.props.title, tabIndex: "-1"}, 
         this.props.children
       )
     );
@@ -3360,8 +3316,9 @@ var MenuItem = React.createClass({displayName: 'MenuItem',
       children = this.renderAnchor();
     }
 
-    return this.transferPropsTo(
-      React.DOM.li( {role:"presentation", title:null, href:null, className:classSet(classes)}, 
+    return (
+      React.createElement("li", React.__spread({},  this.props, {role: "presentation", title: null, href: null, 
+        className: joinClasses(this.props.className, classSet(classes))}), 
         children
       )
     );
@@ -3371,10 +3328,10 @@ var MenuItem = React.createClass({displayName: 'MenuItem',
 module.exports = MenuItem;
 });
 
-define('Modal',['require','exports','module','react','./utils/classSet','./BootstrapMixin','./FadeMixin','./utils/EventListener'],function (require, exports, module) {/** @jsx React.DOM */
-/* global document:false */
+define('Modal',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin','./FadeMixin','./utils/EventListener'],function (require, exports, module) {/* global document:false */
 
 var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 var FadeMixin = require('./FadeMixin');
@@ -3390,7 +3347,7 @@ var Modal = React.createClass({displayName: 'Modal',
   mixins: [BootstrapMixin, FadeMixin],
 
   propTypes: {
-    title: React.PropTypes.renderable,
+    title: React.PropTypes.node,
     backdrop: React.PropTypes.oneOf(['static', true, false]),
     keyboard: React.PropTypes.bool,
     closeButton: React.PropTypes.bool,
@@ -3420,18 +3377,19 @@ var Modal = React.createClass({displayName: 'Modal',
       'in': !this.props.animation || !document.querySelectorAll
     };
 
-    var modal = this.transferPropsTo(
-      React.DOM.div(
-        {title:null,
-        tabIndex:"-1",
-        role:"dialog",
-        style:modalStyle,
-        className:classSet(classes),
-        onClick:this.props.backdrop === true ? this.handleBackdropClick : null,
-        ref:"modal"}, 
-        React.DOM.div( {className:classSet(dialogClasses)}, 
-          React.DOM.div( {className:"modal-content"}, 
-            this.props.title ? this.renderHeader() : null,
+    var modal = (
+      React.createElement("div", React.__spread({}, 
+        this.props, 
+        {title: null, 
+        tabIndex: "-1", 
+        role: "dialog", 
+        style: modalStyle, 
+        className: joinClasses(this.props.className, classSet(classes)), 
+        onClick: this.props.backdrop === true ? this.handleBackdropClick : null, 
+        ref: "modal"}), 
+        React.createElement("div", {className: classSet(dialogClasses)}, 
+          React.createElement("div", {className: "modal-content"}, 
+            this.props.title ? this.renderHeader() : null, 
             this.props.children
           )
         )
@@ -3454,8 +3412,8 @@ var Modal = React.createClass({displayName: 'Modal',
       this.handleBackdropClick : null;
 
     return (
-      React.DOM.div(null, 
-        React.DOM.div( {className:classSet(classes), ref:"backdrop", onClick:onClick} ),
+      React.createElement("div", null, 
+        React.createElement("div", {className: classSet(classes), ref: "backdrop", onClick: onClick}), 
         modal
       )
     );
@@ -3465,13 +3423,13 @@ var Modal = React.createClass({displayName: 'Modal',
     var closeButton;
     if (this.props.closeButton) {
       closeButton = (
-          React.DOM.button( {type:"button", className:"close", 'aria-hidden':"true", onClick:this.props.onRequestHide}, "×")
+          React.createElement("button", {type: "button", className: "close", 'aria-hidden': "true", onClick: this.props.onRequestHide}, "×")
         );
     }
 
     return (
-      React.DOM.div( {className:"modal-header"}, 
-        closeButton,
+      React.createElement("div", {className: "modal-header"}, 
+        closeButton, 
         this.renderTitle()
       )
     );
@@ -3479,8 +3437,8 @@ var Modal = React.createClass({displayName: 'Modal',
 
   renderTitle: function () {
     return (
-      React.isValidComponent(this.props.title) ?
-        this.props.title : React.DOM.h4( {className:"modal-title"}, this.props.title)
+      React.isValidElement(this.props.title) ?
+        this.props.title : React.createElement("h4", {className: "modal-title"}, this.props.title)
     );
   },
 
@@ -3530,14 +3488,14 @@ module.exports = Modal;
 
 });
 
-define('Nav',['require','exports','module','react','./BootstrapMixin','./CollapsableMixin','./utils/classSet','./utils/domUtils','./utils/cloneWithProps','./utils/ValidComponentChildren','./utils/createChainedFunction'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Nav',['require','exports','module','react','./utils/joinClasses','./BootstrapMixin','./CollapsableMixin','./utils/classSet','./utils/domUtils','./utils/cloneWithProps','./utils/ValidComponentChildren','./utils/createChainedFunction'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var BootstrapMixin = require('./BootstrapMixin');
 var CollapsableMixin = require('./CollapsableMixin');
 var classSet = require('./utils/classSet');
 var domUtils = require('./utils/domUtils');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
 var createChainedFunction = require('./utils/createChainedFunction');
 
@@ -3552,7 +3510,8 @@ var Nav = React.createClass({displayName: 'Nav',
     onSelect: React.PropTypes.func,
     collapsable: React.PropTypes.bool,
     expanded: React.PropTypes.bool,
-    navbar: React.PropTypes.bool
+    navbar: React.PropTypes.bool,
+    eventKey: React.PropTypes.any
   },
 
   getDefaultProps: function () {
@@ -3579,11 +3538,11 @@ var Nav = React.createClass({displayName: 'Nav',
     classes['navbar-collapse'] = this.props.collapsable;
 
     if (this.props.navbar && !this.props.collapsable) {
-      return this.transferPropsTo(this.renderUl());
+      return (this.renderUl());
     }
 
-    return this.transferPropsTo(
-      React.DOM.nav( {className:classSet(classes)}, 
+    return (
+      React.createElement("nav", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
         this.renderUl()
       )
     );
@@ -3598,7 +3557,7 @@ var Nav = React.createClass({displayName: 'Nav',
     classes['pull-right'] = this.props.pullRight;
 
     return (
-      React.DOM.ul( {className:classSet(classes), ref:"ul"}, 
+      React.createElement("ul", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes)), ref: "ul"}), 
         ValidComponentChildren.map(this.props.children, this.renderNavItem)
       )
     );
@@ -3609,7 +3568,7 @@ var Nav = React.createClass({displayName: 'Nav',
       return true;
     }
     if (this.props.activeKey != null) {
-      if (child.props.key === this.props.activeKey) {
+      if (child.props.eventKey == this.props.activeKey) {
         return true;
       }
     }
@@ -3622,7 +3581,7 @@ var Nav = React.createClass({displayName: 'Nav',
     return child.props.active;
   },
 
-  renderNavItem: function (child) {
+  renderNavItem: function (child, index) {
     return cloneWithProps(
       child,
       {
@@ -3630,8 +3589,8 @@ var Nav = React.createClass({displayName: 'Nav',
         activeKey: this.props.activeKey,
         activeHref: this.props.activeHref,
         onSelect: createChainedFunction(child.props.onSelect, this.props.onSelect),
-        ref: child.props.ref,
-        key: child.props.key,
+        ref: child.ref,
+        key: child.key ? child.key : index,
         navItem: true
       }
     );
@@ -3642,13 +3601,12 @@ module.exports = Nav;
 
 });
 
-define('Navbar',['require','exports','module','react','./BootstrapMixin','./utils/CustomPropTypes','./utils/classSet','./utils/cloneWithProps','./utils/ValidComponentChildren','./utils/createChainedFunction','./Nav'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Navbar',['require','exports','module','react','./utils/joinClasses','./BootstrapMixin','./utils/classSet','./utils/cloneWithProps','./utils/ValidComponentChildren','./utils/createChainedFunction','./Nav'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var BootstrapMixin = require('./BootstrapMixin');
-var CustomPropTypes = require('./utils/CustomPropTypes');
 var classSet = require('./utils/classSet');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
 var createChainedFunction = require('./utils/createChainedFunction');
 var Nav = require('./Nav');
@@ -3664,9 +3622,9 @@ var Navbar = React.createClass({displayName: 'Navbar',
     inverse: React.PropTypes.bool,
     fluid: React.PropTypes.bool,
     role: React.PropTypes.string,
-    componentClass: CustomPropTypes.componentClass.isRequired,
-    brand: React.PropTypes.renderable,
-    toggleButton: React.PropTypes.renderable,
+    componentClass: React.PropTypes.node.isRequired,
+    brand: React.PropTypes.node,
+    toggleButton: React.PropTypes.node,
     onToggle: React.PropTypes.func,
     navExpanded: React.PropTypes.bool,
     defaultNavExpanded: React.PropTypes.bool
@@ -3677,7 +3635,7 @@ var Navbar = React.createClass({displayName: 'Navbar',
       bsClass: 'navbar',
       bsStyle: 'default',
       role: 'navigation',
-      componentClass: React.DOM.nav
+      componentClass: 'Nav'
     };
   },
 
@@ -3700,40 +3658,40 @@ var Navbar = React.createClass({displayName: 'Navbar',
     }
 
     this.setState({
-      navOpen: !this.state.navOpen
+      navExpanded: !this.state.navExpanded
     });
   },
 
-  isNavOpen: function () {
-    return this.props.navOpen != null ? this.props.navOpen : this.state.navOpen;
+  isNavExpanded: function () {
+    return this.props.navExpanded != null ? this.props.navExpanded : this.state.navExpanded;
   },
 
   render: function () {
     var classes = this.getBsClassSet();
-    var componentClass = this.props.componentClass;
+    var ComponentClass = this.props.componentClass;
 
     classes['navbar-fixed-top'] = this.props.fixedTop;
     classes['navbar-fixed-bottom'] = this.props.fixedBottom;
     classes['navbar-static-top'] = this.props.staticTop;
     classes['navbar-inverse'] = this.props.inverse;
 
-    return this.transferPropsTo(
-      componentClass( {className:classSet(classes)}, 
-        React.DOM.div( {className:this.props.fluid ? 'container-fluid' : 'container'}, 
-          (this.props.brand || this.props.toggleButton || this.props.toggleNavKey) ? this.renderHeader() : null,
+    return (
+      React.createElement(ComponentClass, React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
+        React.createElement("div", {className: this.props.fluid ? 'container-fluid' : 'container'}, 
+          (this.props.brand || this.props.toggleButton || this.props.toggleNavKey) ? this.renderHeader() : null, 
           ValidComponentChildren.map(this.props.children, this.renderChild)
         )
       )
     );
   },
 
-  renderChild: function (child) {
+  renderChild: function (child, index) {
     return cloneWithProps(child, {
       navbar: true,
-      collapsable: this.props.toggleNavKey != null && this.props.toggleNavKey === child.props.key,
-      expanded: this.props.toggleNavKey != null && this.props.toggleNavKey === child.props.key && this.isNavOpen(),
-      key: child.props.key,
-      ref: child.props.ref
+      collapsable: this.props.toggleNavKey != null && this.props.toggleNavKey === child.props.eventKey,
+      expanded: this.props.toggleNavKey != null && this.props.toggleNavKey === child.props.eventKey && this.isNavExpanded(),
+      key: child.key ? child.key : index,
+      ref: child.ref
     });
   },
 
@@ -3741,15 +3699,15 @@ var Navbar = React.createClass({displayName: 'Navbar',
     var brand;
 
     if (this.props.brand) {
-      brand = React.isValidComponent(this.props.brand) ?
+      brand = React.isValidElement(this.props.brand) ?
         cloneWithProps(this.props.brand, {
           className: 'navbar-brand'
-        }) : React.DOM.span( {className:"navbar-brand"}, this.props.brand);
+        }) : React.createElement("span", {className: "navbar-brand"}, this.props.brand);
     }
 
     return (
-      React.DOM.div( {className:"navbar-header"}, 
-        brand,
+      React.createElement("div", {className: "navbar-header"}, 
+        brand, 
         (this.props.toggleButton || this.props.toggleNavKey != null) ? this.renderToggleButton() : null
       )
     );
@@ -3758,7 +3716,7 @@ var Navbar = React.createClass({displayName: 'Navbar',
   renderToggleButton: function () {
     var children;
 
-    if (React.isValidComponent(this.props.toggleButton)) {
+    if (React.isValidElement(this.props.toggleButton)) {
       return cloneWithProps(this.props.toggleButton, {
         className: 'navbar-toggle',
         onClick: createChainedFunction(this.handleToggle, this.props.toggleButton.props.onClick)
@@ -3767,14 +3725,14 @@ var Navbar = React.createClass({displayName: 'Navbar',
 
     children = (this.props.toggleButton != null) ?
       this.props.toggleButton : [
-        React.DOM.span( {className:"sr-only", key:0}, "Toggle navigation"),
-        React.DOM.span( {className:"icon-bar", key:1}),
-        React.DOM.span( {className:"icon-bar", key:2}),
-        React.DOM.span( {className:"icon-bar", key:3})
+        React.createElement("span", {className: "sr-only", key: 0}, "Toggle navigation"),
+        React.createElement("span", {className: "icon-bar", key: 1}),
+        React.createElement("span", {className: "icon-bar", key: 2}),
+        React.createElement("span", {className: "icon-bar", key: 3})
     ];
 
     return (
-      React.DOM.button( {className:"navbar-toggle", type:"button", onClick:this.handleToggle}, 
+      React.createElement("button", {className: "navbar-toggle", type: "button", onClick: this.handleToggle}, 
         children
       )
     );
@@ -3785,9 +3743,8 @@ module.exports = Navbar;
 
 });
 
-define('NavItem',['require','exports','module','react','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('NavItem',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 
@@ -3799,7 +3756,8 @@ var NavItem = React.createClass({displayName: 'NavItem',
     active: React.PropTypes.bool,
     disabled: React.PropTypes.bool,
     href: React.PropTypes.string,
-    title: React.PropTypes.string
+    title: React.PropTypes.string,
+    eventKey: React.PropTypes.any
   },
 
   getDefaultProps: function () {
@@ -3814,13 +3772,13 @@ var NavItem = React.createClass({displayName: 'NavItem',
       'disabled': this.props.disabled
     };
 
-    return this.transferPropsTo(
-      React.DOM.li( {className:classSet(classes)}, 
-        React.DOM.a(
-          {href:this.props.href,
-          title:this.props.title,
-          onClick:this.handleClick,
-          ref:"anchor"}, 
+    return (
+      React.createElement("li", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
+        React.createElement("a", {
+          href: this.props.href, 
+          title: this.props.title, 
+          onClick: this.handleClick, 
+          ref: "anchor"}, 
           this.props.children
         )
       )
@@ -3832,13 +3790,77 @@ var NavItem = React.createClass({displayName: 'NavItem',
       e.preventDefault();
 
       if (!this.props.disabled) {
-        this.props.onSelect(this.props.key,this.props.href);
+        this.props.onSelect(this.props.eventKey, this.props.href);
       }
     }
   }
 });
 
 module.exports = NavItem;
+});
+
+define('utils/CustomPropTypes',['require','exports','module','react'],function (require, exports, module) {var React = require('react');
+
+var ANONYMOUS = '<<anonymous>>';
+
+var CustomPropTypes = {
+  /**
+   * Checks whether a prop provides a DOM element
+   *
+   * The element can be provided in two forms:
+   * - Directly passed
+   * - Or passed an object which has a `getDOMNode` method which will return the required DOM element
+   *
+   * @param props
+   * @param propName
+   * @param componentName
+   * @returns {Error|undefined}
+   */
+  mountable: createMountableChecker()
+};
+
+/**
+ * Create chain-able isRequired validator
+ *
+ * Largely copied directly from:
+ *  https://github.com/facebook/react/blob/0.11-stable/src/core/ReactPropTypes.js#L94
+ */
+function createChainableTypeChecker(validate) {
+  function checkType(isRequired, props, propName, componentName) {
+    componentName = componentName || ANONYMOUS;
+    if (props[propName] == null) {
+      if (isRequired) {
+        return new Error(
+          'Required prop `' + propName + '` was not specified in ' +
+            '`' + componentName + '`.'
+        );
+      }
+    } else {
+      return validate(props, propName, componentName);
+    }
+  }
+
+  var chainedCheckType = checkType.bind(null, false);
+  chainedCheckType.isRequired = checkType.bind(null, true);
+
+  return chainedCheckType;
+}
+
+function createMountableChecker() {
+  function validate(props, propName, componentName) {
+    if (typeof props[propName] !== 'object' ||
+      typeof props[propName].getDOMNode !== 'function' && props[propName].nodeType !== 1) {
+      return new Error(
+        'Invalid prop `' + propName + '` supplied to ' +
+          '`' + componentName + '`, expected a DOM element or an object that has a `getDOMNode` method'
+      );
+    }
+  }
+
+  return createChainableTypeChecker(validate);
+}
+
+module.exports = CustomPropTypes;
 });
 
 define('OverlayMixin',['require','exports','module','react','./utils/CustomPropTypes'],function (require, exports, module) {var React = require('react');
@@ -3893,7 +3915,7 @@ module.exports = {
     }
 
     // Save reference to help testing
-    this._overlayInstance = React.renderComponent(this.renderOverlay(), this._overlayTarget);
+    this._overlayInstance = React.render(this.renderOverlay(), this._overlayTarget);
   },
 
   _unrenderOverlay: function () {
@@ -3917,18 +3939,17 @@ module.exports = {
 
 });
 
-define('ModalTrigger',['require','exports','module','react','./OverlayMixin','./utils/cloneWithProps','./utils/createChainedFunction'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('ModalTrigger',['require','exports','module','react','./OverlayMixin','./utils/cloneWithProps','./utils/createChainedFunction'],function (require, exports, module) {var React = require('react');
 var OverlayMixin = require('./OverlayMixin');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var createChainedFunction = require('./utils/createChainedFunction');
 
 var ModalTrigger = React.createClass({displayName: 'ModalTrigger',
   mixins: [OverlayMixin],
 
   propTypes: {
-    modal: React.PropTypes.renderable.isRequired
+    modal: React.PropTypes.node.isRequired
   },
 
   getInitialState: function () {
@@ -3957,7 +3978,7 @@ var ModalTrigger = React.createClass({displayName: 'ModalTrigger',
 
   renderOverlay: function () {
     if (!this.state.isOverlayShown) {
-      return React.DOM.span(null );
+      return React.createElement("span", null);
     }
 
     return cloneWithProps(
@@ -3982,14 +4003,13 @@ var ModalTrigger = React.createClass({displayName: 'ModalTrigger',
 module.exports = ModalTrigger;
 });
 
-define('OverlayTrigger',['require','exports','module','react','./OverlayMixin','./utils/domUtils','./utils/cloneWithProps','./utils/createChainedFunction','./utils/merge'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('OverlayTrigger',['require','exports','module','react','./OverlayMixin','./utils/domUtils','./utils/cloneWithProps','./utils/createChainedFunction','./utils/Object.assign'],function (require, exports, module) {var React = require('react');
 var OverlayMixin = require('./OverlayMixin');
 var domUtils = require('./utils/domUtils');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var createChainedFunction = require('./utils/createChainedFunction');
-var merge = require('./utils/merge');
+var assign = require('./utils/Object.assign');
 
 /**
  * Check if value one is inside or equal to the of value
@@ -4018,7 +4038,7 @@ var OverlayTrigger = React.createClass({displayName: 'OverlayTrigger',
     delayShow: React.PropTypes.number,
     delayHide: React.PropTypes.number,
     defaultOverlayShown: React.PropTypes.bool,
-    overlay: React.PropTypes.renderable.isRequired
+    overlay: React.PropTypes.node.isRequired
   },
 
   getDefaultProps: function () {
@@ -4058,7 +4078,7 @@ var OverlayTrigger = React.createClass({displayName: 'OverlayTrigger',
 
   renderOverlay: function () {
     if (!this.state.isOverlayShown) {
-      return React.DOM.span(null );
+      return React.createElement("span", null);
     }
 
     return cloneWithProps(
@@ -4073,6 +4093,10 @@ var OverlayTrigger = React.createClass({displayName: 'OverlayTrigger',
   },
 
   render: function () {
+    if (this.props.trigger === 'manual') {
+      return React.Children.only(this.props.children);
+    }
+
     var props = {};
 
     if (isOneOf('click', this.props.trigger)) {
@@ -4194,7 +4218,7 @@ var OverlayTrigger = React.createClass({displayName: 'OverlayTrigger',
     var offset = container.tagName == 'BODY' ?
       domUtils.getOffset(node) : domUtils.getPosition(node, container);
 
-    return merge(offset, {
+    return assign({}, offset, {
       height: node.offsetHeight,
       width: node.offsetWidth
     });
@@ -4204,16 +4228,15 @@ var OverlayTrigger = React.createClass({displayName: 'OverlayTrigger',
 module.exports = OverlayTrigger;
 });
 
-define('PageHeader',['require','exports','module','react'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('PageHeader',['require','exports','module','react','./utils/joinClasses'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 
 var PageHeader = React.createClass({displayName: 'PageHeader',
 
   render: function () {
-    return this.transferPropsTo(
-      React.DOM.div( {className:"page-header"}, 
-        React.DOM.h1(null, this.props.children)
+    return (
+      React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, 'page-header')}), 
+        React.createElement("h1", null, this.props.children)
       )
     );
   }
@@ -4222,11 +4245,11 @@ var PageHeader = React.createClass({displayName: 'PageHeader',
 module.exports = PageHeader;
 });
 
-define('Panel',['require','exports','module','react','./utils/classSet','./utils/cloneWithProps','./BootstrapMixin','./CollapsableMixin'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Panel',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./utils/cloneWithProps','./BootstrapMixin','./CollapsableMixin'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var BootstrapMixin = require('./BootstrapMixin');
 var CollapsableMixin = require('./CollapsableMixin');
 
@@ -4235,8 +4258,9 @@ var Panel = React.createClass({displayName: 'Panel',
 
   propTypes: {
     onSelect: React.PropTypes.func,
-    header: React.PropTypes.renderable,
-    footer: React.PropTypes.renderable
+    header: React.PropTypes.node,
+    footer: React.PropTypes.node,
+    eventKey: React.PropTypes.any
   },
 
   getDefaultProps: function () {
@@ -4249,7 +4273,7 @@ var Panel = React.createClass({displayName: 'Panel',
   handleSelect: function (e) {
     if (this.props.onSelect) {
       this._isChanging = true;
-      this.props.onSelect(this.props.key);
+      this.props.onSelect(this.props.eventKey);
       this._isChanging = false;
     }
 
@@ -4280,10 +4304,11 @@ var Panel = React.createClass({displayName: 'Panel',
     var classes = this.getBsClassSet();
     classes['panel'] = true;
 
-    return this.transferPropsTo(
-      React.DOM.div( {className:classSet(classes), id:this.props.collapsable ? null : this.props.id, onSelect:null}, 
-        this.renderHeading(),
-        this.props.collapsable ? this.renderCollapsableBody() : this.renderBody(),
+    return (
+      React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes)), 
+        id: this.props.collapsable ? null : this.props.id, onSelect: null}), 
+        this.renderHeading(), 
+        this.props.collapsable ? this.renderCollapsableBody() : this.renderBody(), 
         this.renderFooter()
       )
     );
@@ -4291,7 +4316,7 @@ var Panel = React.createClass({displayName: 'Panel',
 
   renderCollapsableBody: function () {
     return (
-      React.DOM.div( {className:classSet(this.getCollapsableClassSet('panel-collapse')), id:this.props.id, ref:"panel"}, 
+      React.createElement("div", {className: classSet(this.getCollapsableClassSet('panel-collapse')), id: this.props.id, ref: "panel"}, 
         this.renderBody()
       )
     );
@@ -4299,7 +4324,7 @@ var Panel = React.createClass({displayName: 'Panel',
 
   renderBody: function () {
     return (
-      React.DOM.div( {className:"panel-body", ref:"body"}, 
+      React.createElement("div", {className: "panel-body", ref: "body"}, 
         this.props.children
       )
     );
@@ -4312,7 +4337,7 @@ var Panel = React.createClass({displayName: 'Panel',
       return null;
     }
 
-    if (!React.isValidComponent(header) || Array.isArray(header)) {
+    if (!React.isValidElement(header) || Array.isArray(header)) {
       header = this.props.collapsable ?
         this.renderCollapsableTitle(header) : header;
     } else if (this.props.collapsable) {
@@ -4327,7 +4352,7 @@ var Panel = React.createClass({displayName: 'Panel',
     }
 
     return (
-      React.DOM.div( {className:"panel-heading"}, 
+      React.createElement("div", {className: "panel-heading"}, 
         header
       )
     );
@@ -4335,10 +4360,10 @@ var Panel = React.createClass({displayName: 'Panel',
 
   renderAnchor: function (header) {
     return (
-      React.DOM.a(
-        {href:'#' + (this.props.id || ''),
-        className:this.isExpanded() ? null : 'collapsed',
-        onClick:this.handleSelect}, 
+      React.createElement("a", {
+        href: '#' + (this.props.id || ''), 
+        className: this.isExpanded() ? null : 'collapsed', 
+        onClick: this.handleSelect}, 
         header
       )
     );
@@ -4346,7 +4371,7 @@ var Panel = React.createClass({displayName: 'Panel',
 
   renderCollapsableTitle: function (header) {
     return (
-      React.DOM.h4( {className:"panel-title"}, 
+      React.createElement("h4", {className: "panel-title"}, 
         this.renderAnchor(header)
       )
     );
@@ -4358,7 +4383,7 @@ var Panel = React.createClass({displayName: 'Panel',
     }
 
     return (
-      React.DOM.div( {className:"panel-footer"}, 
+      React.createElement("div", {className: "panel-footer"}, 
         this.props.footer
       )
     );
@@ -4368,9 +4393,8 @@ var Panel = React.createClass({displayName: 'Panel',
 module.exports = Panel;
 });
 
-define('PageItem',['require','exports','module','react','./utils/classSet'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('PageItem',['require','exports','module','react','./utils/joinClasses','./utils/classSet'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 
 var PageItem = React.createClass({displayName: 'PageItem',
@@ -4379,7 +4403,8 @@ var PageItem = React.createClass({displayName: 'PageItem',
     disabled: React.PropTypes.bool,
     previous: React.PropTypes.bool,
     next: React.PropTypes.bool,
-    onSelect: React.PropTypes.func
+    onSelect: React.PropTypes.func,
+    eventKey: React.PropTypes.any
   },
 
   getDefaultProps: function () {
@@ -4395,14 +4420,15 @@ var PageItem = React.createClass({displayName: 'PageItem',
       'next': this.props.next
     };
 
-    return this.transferPropsTo(
-      React.DOM.li(
-        {className:classSet(classes)}, 
-        React.DOM.a(
-          {href:this.props.href,
-          title:this.props.title,
-          onClick:this.handleSelect,
-          ref:"anchor"}, 
+    return (
+      React.createElement("li", React.__spread({}, 
+        this.props, 
+        {className: joinClasses(this.props.className, classSet(classes))}), 
+        React.createElement("a", {
+          href: this.props.href, 
+          title: this.props.title, 
+          onClick: this.handleSelect, 
+          ref: "anchor"}, 
           this.props.children
         )
       )
@@ -4414,7 +4440,7 @@ var PageItem = React.createClass({displayName: 'PageItem',
       e.preventDefault();
 
       if (!this.props.disabled) {
-        this.props.onSelect(this.props.key, this.props.href);
+        this.props.onSelect(this.props.eventKey, this.props.href);
       }
     }
   }
@@ -4423,10 +4449,10 @@ var PageItem = React.createClass({displayName: 'PageItem',
 module.exports = PageItem;
 });
 
-define('Pager',['require','exports','module','react','./utils/cloneWithProps','./utils/ValidComponentChildren','./utils/createChainedFunction'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Pager',['require','exports','module','react','./utils/joinClasses','./utils/cloneWithProps','./utils/ValidComponentChildren','./utils/createChainedFunction'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
 var createChainedFunction = require('./utils/createChainedFunction');
 
@@ -4437,21 +4463,22 @@ var Pager = React.createClass({displayName: 'Pager',
   },
 
   render: function () {
-    return this.transferPropsTo(
-      React.DOM.ul(
-        {className:"pager"}, 
+    return (
+      React.createElement("ul", React.__spread({}, 
+        this.props, 
+        {className: joinClasses(this.props.className, 'pager')}), 
         ValidComponentChildren.map(this.props.children, this.renderPageItem)
       )
     );
   },
 
-  renderPageItem: function (child) {
+  renderPageItem: function (child, index) {
     return cloneWithProps(
       child,
       {
         onSelect: createChainedFunction(child.props.onSelect, this.props.onSelect),
-        ref: child.props.ref,
-        key: child.props.key
+        ref: child.ref,
+        key: child.key ? child.key : index
       }
     );
   }
@@ -4460,9 +4487,8 @@ var Pager = React.createClass({displayName: 'Pager',
 module.exports = Pager;
 });
 
-define('Popover',['require','exports','module','react','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Popover',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 
@@ -4476,7 +4502,7 @@ var Popover = React.createClass({displayName: 'Popover',
     positionTop: React.PropTypes.number,
     arrowOffsetLeft: React.PropTypes.number,
     arrowOffsetTop: React.PropTypes.number,
-    title: React.PropTypes.renderable
+    title: React.PropTypes.node
   },
 
   getDefaultProps: function () {
@@ -4500,11 +4526,11 @@ var Popover = React.createClass({displayName: 'Popover',
     arrowStyle['left'] = this.props.arrowOffsetLeft;
     arrowStyle['top'] = this.props.arrowOffsetTop;
 
-    return this.transferPropsTo(
-      React.DOM.div( {className:classSet(classes), style:style, title:null}, 
-        React.DOM.div( {className:"arrow", style:arrowStyle} ),
-        this.props.title ? this.renderTitle() : null,
-        React.DOM.div( {className:"popover-content"}, 
+    return (
+      React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes)), style: style, title: null}), 
+        React.createElement("div", {className: "arrow", style: arrowStyle}), 
+        this.props.title ? this.renderTitle() : null, 
+        React.createElement("div", {className: "popover-content"}, 
           this.props.children
         )
       )
@@ -4513,7 +4539,7 @@ var Popover = React.createClass({displayName: 'Popover',
 
   renderTitle: function() {
     return (
-      React.DOM.h3( {className:"popover-title"}, this.props.title)
+      React.createElement("h3", {className: "popover-title"}, this.props.title)
     );
   }
 });
@@ -4521,13 +4547,13 @@ var Popover = React.createClass({displayName: 'Popover',
 module.exports = Popover;
 });
 
-define('ProgressBar',['require','exports','module','react','./Interpolate','./BootstrapMixin','./utils/classSet','./utils/cloneWithProps','./utils/ValidComponentChildren'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('ProgressBar',['require','exports','module','react','./utils/joinClasses','./Interpolate','./BootstrapMixin','./utils/classSet','./utils/cloneWithProps','./utils/ValidComponentChildren'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var Interpolate = require('./Interpolate');
 var BootstrapMixin = require('./BootstrapMixin');
 var classSet = require('./utils/classSet');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
 
 
@@ -4536,7 +4562,7 @@ var ProgressBar = React.createClass({displayName: 'ProgressBar',
     min: React.PropTypes.number,
     now: React.PropTypes.number,
     max: React.PropTypes.number,
-    label: React.PropTypes.renderable,
+    label: React.PropTypes.node,
     srOnly: React.PropTypes.bool,
     striped: React.PropTypes.bool,
     active: React.PropTypes.bool
@@ -4570,30 +4596,30 @@ var ProgressBar = React.createClass({displayName: 'ProgressBar',
 
     if (!ValidComponentChildren.hasValidComponent(this.props.children)) {
       if (!this.props.isChild) {
-        return this.transferPropsTo(
-          React.DOM.div( {className:classSet(classes)}, 
+        return (
+          React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
             this.renderProgressBar()
           )
         );
       } else {
-        return this.transferPropsTo(
+        return (
           this.renderProgressBar()
         );
       }
     } else {
-      return this.transferPropsTo(
-        React.DOM.div( {className:classSet(classes)}, 
+      return (
+        React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
           ValidComponentChildren.map(this.props.children, this.renderChildBar)
         )
       );
     }
   },
 
-  renderChildBar: function (child) {
+  renderChildBar: function (child, index) {
     return cloneWithProps(child, {
       isChild: true,
-      key: child.props.key,
-      ref: child.props.ref
+      key: child.key ? child.key : index,
+      ref: child.ref
     });
   },
 
@@ -4616,12 +4642,14 @@ var ProgressBar = React.createClass({displayName: 'ProgressBar',
       label = this.renderScreenReaderOnlyLabel(label);
     }
 
+    var classes = this.getBsClassSet();
+
     return (
-      React.DOM.div( {className:classSet(this.getBsClassSet()), role:"progressbar",
-        style:{width: percentage + '%'},
-        'aria-valuenow':this.props.now,
-        'aria-valuemin':this.props.min,
-        'aria-valuemax':this.props.max}, 
+      React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes)), role: "progressbar", 
+        style: {width: percentage + '%'}, 
+        'aria-valuenow': this.props.now, 
+        'aria-valuemin': this.props.min, 
+        'aria-valuemax': this.props.max}), 
         label
       )
     );
@@ -4631,12 +4659,12 @@ var ProgressBar = React.createClass({displayName: 'ProgressBar',
     var InterpolateClass = this.props.interpolateClass || Interpolate;
 
     return (
-      InterpolateClass(
-        {now:this.props.now,
-        min:this.props.min,
-        max:this.props.max,
-        percent:percentage,
-        bsStyle:this.props.bsStyle}, 
+      React.createElement(InterpolateClass, {
+        now: this.props.now, 
+        min: this.props.min, 
+        max: this.props.max, 
+        percent: percentage, 
+        bsStyle: this.props.bsStyle}, 
         this.props.label
       )
     );
@@ -4644,7 +4672,7 @@ var ProgressBar = React.createClass({displayName: 'ProgressBar',
 
   renderScreenReaderOnlyLabel: function (label) {
     return (
-      React.DOM.span( {className:"sr-only"}, 
+      React.createElement("span", {className: "sr-only"}, 
         label
       )
     );
@@ -4655,28 +4683,25 @@ module.exports = ProgressBar;
 
 });
 
-define('Row',['require','exports','module','react','./utils/CustomPropTypes'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
-var CustomPropTypes = require('./utils/CustomPropTypes');
-
+define('Row',['require','exports','module','react','./utils/joinClasses'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 
 var Row = React.createClass({displayName: 'Row',
   propTypes: {
-    componentClass: CustomPropTypes.componentClass.isRequired
+    componentClass: React.PropTypes.node.isRequired
   },
 
   getDefaultProps: function () {
     return {
-      componentClass: React.DOM.div
+      componentClass: 'div'
     };
   },
 
   render: function () {
-    var componentClass = this.props.componentClass;
+    var ComponentClass = this.props.componentClass;
 
-    return this.transferPropsTo(
-      componentClass( {className:"row"}, 
+    return (
+      React.createElement(ComponentClass, React.__spread({},  this.props, {className: joinClasses(this.props.className, 'row')}), 
         this.props.children
       )
     );
@@ -4686,9 +4711,8 @@ var Row = React.createClass({displayName: 'Row',
 module.exports = Row;
 });
 
-define('SplitButton',['require','exports','module','react','./utils/classSet','./BootstrapMixin','./DropdownStateMixin','./Button','./ButtonGroup','./DropdownMenu'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('SplitButton',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin','./DropdownStateMixin','./Button','./ButtonGroup','./DropdownMenu'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 var DropdownStateMixin = require('./DropdownStateMixin');
@@ -4701,9 +4725,9 @@ var SplitButton = React.createClass({displayName: 'SplitButton',
 
   propTypes: {
     pullRight:     React.PropTypes.bool,
-    title:         React.PropTypes.renderable,
+    title:         React.PropTypes.node,
     href:          React.PropTypes.string,
-    dropdownTitle: React.PropTypes.renderable,
+    dropdownTitle: React.PropTypes.node,
     onClick:       React.PropTypes.func,
     onSelect:      React.PropTypes.func,
     disabled:      React.PropTypes.bool
@@ -4721,40 +4745,42 @@ var SplitButton = React.createClass({displayName: 'SplitButton',
         'dropup': this.props.dropup
       };
 
-    var button = this.transferPropsTo(
-      Button(
-        {ref:"button",
-        onClick:this.handleButtonClick,
-        title:null,
-        id:null}, 
+    var button = (
+      React.createElement(Button, React.__spread({}, 
+        this.props, 
+        {ref: "button", 
+        onClick: this.handleButtonClick, 
+        title: null, 
+        id: null}), 
         this.props.title
       )
     );
 
-    var dropdownButton = this.transferPropsTo(
-      Button(
-        {ref:"dropdownButton",
-        className:"dropdown-toggle",
-        onClick:this.handleDropdownClick,
-        title:null,
-        id:null}, 
-        React.DOM.span( {className:"sr-only"}, this.props.dropdownTitle),
-        React.DOM.span( {className:"caret"} )
+    var dropdownButton = (
+      React.createElement(Button, React.__spread({}, 
+        this.props, 
+        {ref: "dropdownButton", 
+        className: joinClasses(this.props.className, 'dropdown-toggle'), 
+        onClick: this.handleDropdownClick, 
+        title: null, 
+        id: null}), 
+        React.createElement("span", {className: "sr-only"}, this.props.dropdownTitle), 
+        React.createElement("span", {className: "caret"})
       )
     );
 
     return (
-      ButtonGroup(
-        {bsSize:this.props.bsSize,
-        className:classSet(groupClasses),
-        id:this.props.id}, 
-        button,
-        dropdownButton,
-        DropdownMenu(
-          {ref:"menu",
-          onSelect:this.handleOptionSelect,
-          'aria-labelledby':this.props.id,
-          pullRight:this.props.pullRight}, 
+      React.createElement(ButtonGroup, {
+        bsSize: this.props.bsSize, 
+        className: classSet(groupClasses), 
+        id: this.props.id}, 
+        button, 
+        dropdownButton, 
+        React.createElement(DropdownMenu, {
+          ref: "menu", 
+          onSelect: this.handleOptionSelect, 
+          'aria-labelledby': this.props.id, 
+          pullRight: this.props.pullRight}, 
           this.props.children
         )
       )
@@ -4790,11 +4816,11 @@ module.exports = SplitButton;
 
 });
 
-define('SubNav',['require','exports','module','react','./utils/classSet','./utils/cloneWithProps','./utils/ValidComponentChildren','./utils/createChainedFunction','./BootstrapMixin'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('SubNav',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./utils/cloneWithProps','./utils/ValidComponentChildren','./utils/createChainedFunction','./BootstrapMixin'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
 var createChainedFunction = require('./utils/createChainedFunction');
 var BootstrapMixin = require('./BootstrapMixin');
@@ -4809,7 +4835,7 @@ var SubNav = React.createClass({displayName: 'SubNav',
     disabled: React.PropTypes.bool,
     href: React.PropTypes.string,
     title: React.PropTypes.string,
-    text: React.PropTypes.renderable
+    text: React.PropTypes.node
   },
 
   getDefaultProps: function () {
@@ -4823,7 +4849,7 @@ var SubNav = React.createClass({displayName: 'SubNav',
       e.preventDefault();
 
       if (!this.props.disabled) {
-        this.props.onSelect(this.props.key, this.props.href);
+        this.props.onSelect(this.props.eventKey, this.props.href);
       }
     }
   },
@@ -4837,7 +4863,7 @@ var SubNav = React.createClass({displayName: 'SubNav',
       return true;
     }
 
-    if (this.props.activeKey != null && this.props.activeKey === child.props.key) {
+    if (this.props.activeKey != null && this.props.activeKey === child.props.eventKey) {
       return true;
     }
 
@@ -4869,7 +4895,7 @@ var SubNav = React.createClass({displayName: 'SubNav',
       return true;
     }
     if (this.props.activeKey != null) {
-      if (child.props.key === this.props.activeKey) {
+      if (child.props.eventKey == this.props.activeKey) {
         return true;
       }
     }
@@ -4888,30 +4914,30 @@ var SubNav = React.createClass({displayName: 'SubNav',
       'disabled': this.props.disabled
     };
 
-    return this.transferPropsTo(
-      React.DOM.li( {className:classSet(classes)}, 
-        React.DOM.a(
-          {href:this.props.href,
-          title:this.props.title,
-          onClick:this.handleClick,
-          ref:"anchor"}, 
+    return (
+      React.createElement("li", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
+        React.createElement("a", {
+          href: this.props.href, 
+          title: this.props.title, 
+          onClick: this.handleClick, 
+          ref: "anchor"}, 
           this.props.text
-        ),
-        React.DOM.ul( {className:"nav"}, 
+        ), 
+        React.createElement("ul", {className: "nav"}, 
           ValidComponentChildren.map(this.props.children, this.renderNavItem)
         )
       )
     );
   },
 
-  renderNavItem: function (child) {
+  renderNavItem: function (child, index) {
     return cloneWithProps(
       child,
       {
         active: this.getChildActiveProp(child),
         onSelect: createChainedFunction(child.props.onSelect, this.props.onSelect),
-        ref: child.props.ref,
-        key: child.props.key
+        ref: child.ref,
+        key: child.key ? child.key : index
       }
     );
   }
@@ -4921,11 +4947,10 @@ module.exports = SubNav;
 
 });
 
-define('TabbedArea',['require','exports','module','react','./BootstrapMixin','./utils/cloneWithProps','./utils/ValidComponentChildren','./Nav','./NavItem'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('TabbedArea',['require','exports','module','react','./BootstrapMixin','./utils/cloneWithProps','./utils/ValidComponentChildren','./Nav','./NavItem'],function (require, exports, module) {var React = require('react');
 var BootstrapMixin = require('./BootstrapMixin');
 var cloneWithProps = require('./utils/cloneWithProps');
+
 var ValidComponentChildren = require('./utils/ValidComponentChildren');
 var Nav = require('./Nav');
 var NavItem = require('./NavItem');
@@ -4935,7 +4960,7 @@ function getDefaultActiveKeyFromChildren(children) {
 
   ValidComponentChildren.forEach(children, function(child) {
     if (defaultActiveKey == null) {
-      defaultActiveKey = child.props.key;
+      defaultActiveKey = child.props.eventKey;
     }
   });
 
@@ -4993,16 +5018,16 @@ var TabbedArea = React.createClass({displayName: 'TabbedArea',
       return child.props.tab != null ? this.renderTab(child) : null;
     }
 
-    var nav = this.transferPropsTo(
-      Nav( {activeKey:activeKey, onSelect:this.handleSelect, ref:"tabs"}, 
+    var nav = (
+      React.createElement(Nav, React.__spread({},  this.props, {activeKey: activeKey, onSelect: this.handleSelect, ref: "tabs"}), 
         ValidComponentChildren.map(this.props.children, renderTabIfSet, this)
       )
     );
 
     return (
-      React.DOM.div(null, 
-        nav,
-        React.DOM.div( {id:this.props.id, className:"tab-content", ref:"panes"}, 
+      React.createElement("div", null, 
+        nav, 
+        React.createElement("div", {id: this.props.id, className: "tab-content", ref: "panes"}, 
           ValidComponentChildren.map(this.props.children, this.renderPane)
         )
       )
@@ -5013,29 +5038,29 @@ var TabbedArea = React.createClass({displayName: 'TabbedArea',
     return this.props.activeKey != null ? this.props.activeKey : this.state.activeKey;
   },
 
-  renderPane: function (child) {
+  renderPane: function (child, index) {
     var activeKey = this.getActiveKey();
 
     return cloneWithProps(
         child,
         {
-          active: (child.props.key === activeKey &&
+          active: (child.props.eventKey === activeKey &&
             (this.state.previousActiveKey == null || !this.props.animation)),
-          ref: child.props.ref,
-          key: child.props.key,
+          ref: child.ref,
+          key: child.key ? child.key : index,
           animation: this.props.animation,
           onAnimateOutEnd: (this.state.previousActiveKey != null &&
-            child.props.key === this.state.previousActiveKey) ? this.handlePaneAnimateOutEnd: null
+            child.props.eventKey === this.state.previousActiveKey) ? this.handlePaneAnimateOutEnd: null
         }
       );
   },
 
   renderTab: function (child) {
-    var key = child.props.key;
+    var key = child.props.eventKey;
     return (
-      NavItem(
-        {ref:'tab' + key,
-        key:key}, 
+      React.createElement(NavItem, {
+        ref: 'tab' + key, 
+        eventKey: key}, 
         child.props.tab
       )
     );
@@ -5063,9 +5088,8 @@ var TabbedArea = React.createClass({displayName: 'TabbedArea',
 module.exports = TabbedArea;
 });
 
-define('Table',['require','exports','module','react','./utils/classSet'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Table',['require','exports','module','react','./utils/joinClasses','./utils/classSet'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 
 var Table = React.createClass({displayName: 'Table',
@@ -5085,14 +5109,14 @@ var Table = React.createClass({displayName: 'Table',
       'table-condensed': this.props.condensed,
       'table-hover': this.props.hover
     };
-    var table = this.transferPropsTo(
-      React.DOM.table( {className:classSet(classes)}, 
+    var table = (
+      React.createElement("table", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.children
       )
     );
 
     return this.props.responsive ? (
-      React.DOM.div( {className:"table-responsive"}, 
+      React.createElement("div", {className: "table-responsive"}, 
         table
       )
     ) : table;
@@ -5102,9 +5126,8 @@ var Table = React.createClass({displayName: 'Table',
 module.exports = Table;
 });
 
-define('TabPane',['require','exports','module','react','./utils/classSet','./utils/TransitionEvents'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('TabPane',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./utils/TransitionEvents'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var TransitionEvents = require('./utils/TransitionEvents');
 
@@ -5176,8 +5199,8 @@ var TabPane = React.createClass({displayName: 'TabPane',
       'in': this.props.active && !this.state.animateIn
     };
 
-    return this.transferPropsTo(
-      React.DOM.div( {className:classSet(classes)}, 
+    return (
+      React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.children
       )
     );
@@ -5187,9 +5210,8 @@ var TabPane = React.createClass({displayName: 'TabPane',
 module.exports = TabPane;
 });
 
-define('Tooltip',['require','exports','module','react','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Tooltip',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 
@@ -5225,10 +5247,10 @@ var Tooltip = React.createClass({displayName: 'Tooltip',
     arrowStyle['left'] = this.props.arrowOffsetLeft;
     arrowStyle['top'] = this.props.arrowOffsetTop;
 
-    return this.transferPropsTo(
-        React.DOM.div( {className:classSet(classes), style:style}, 
-          React.DOM.div( {className:"tooltip-arrow", style:arrowStyle} ),
-          React.DOM.div( {className:"tooltip-inner"}, 
+    return (
+        React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes)), style: style}), 
+          React.createElement("div", {className: "tooltip-arrow", style: arrowStyle}), 
+          React.createElement("div", {className: "tooltip-inner"}, 
             this.props.children
           )
         )
@@ -5239,9 +5261,8 @@ var Tooltip = React.createClass({displayName: 'Tooltip',
 module.exports = Tooltip;
 });
 
-define('Well',['require','exports','module','react','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {/** @jsx React.DOM */
-
-var React = require('react');
+define('Well',['require','exports','module','react','./utils/joinClasses','./utils/classSet','./BootstrapMixin'],function (require, exports, module) {var React = require('react');
+var joinClasses = require('./utils/joinClasses');
 var classSet = require('./utils/classSet');
 var BootstrapMixin = require('./BootstrapMixin');
 
@@ -5257,8 +5278,8 @@ var Well = React.createClass({displayName: 'Well',
   render: function () {
     var classes = this.getBsClassSet();
 
-    return this.transferPropsTo(
-      React.DOM.div( {className:classSet(classes)}, 
+    return (
+      React.createElement("div", React.__spread({},  this.props, {className: joinClasses(this.props.className, classSet(classes))}), 
         this.props.children
       )
     );

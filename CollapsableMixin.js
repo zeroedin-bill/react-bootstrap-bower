@@ -47,7 +47,7 @@ var CollapsableMixin = {
     var node = this.getCollapsableDOMNode();
 
     if (node) {
-      TransitionEvents.addEndEventListener(
+      TransitionEvents.removeEndEventListener(
         node,
         this.handleTransitionEnd
       );
@@ -94,8 +94,12 @@ var CollapsableMixin = {
     var node = this.getCollapsableDOMNode();
 
     if (node) {
-      node.style[dimension] = this.isExpanded() ?
-        this.getCollapsableDimensionValue() + 'px' : '0px';
+        if(this.isExpanded() && !this.state.collapsing) {
+            node.style[dimension] = 'auto';
+        } else {
+            node.style[dimension] = this.isExpanded() ?
+              this.getCollapsableDimensionValue() + 'px' : '0px';
+        }
     }
   },
 
@@ -124,4 +128,5 @@ var CollapsableMixin = {
 };
 
 module.exports = CollapsableMixin;
+
 });
